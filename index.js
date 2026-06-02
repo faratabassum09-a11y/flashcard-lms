@@ -1,6 +1,8 @@
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
+
 mongoose.connect(process.env.MONGO_URI)
 .then(async () => {
     console.log("MongoDB connected");
@@ -16,10 +18,11 @@ mongoose.connect(process.env.MONGO_URI)
     console.log("MongoDB error:", err);
 });
 
-require("dotenv").config();
+
 const ejs = require("ejs");
 const ejsMate = require("ejs-mate");
 const session = require("express-session");
+const MongoStore = require("connect-mongo").default;
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
@@ -106,10 +109,30 @@ const Result = require("./models/result");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(methodOverride("_method"));
+
+
+
+const store = MongoStore.create({
+  mongoUrl: process.env.MONGO_URI,
+  crypto: {
+    secret: process.env.SESSION_SECRET
+  },
+  touchAfter: 24 * 3600
+});
+
+store.on("error",()=>{
+  console.log("Error in mongo session store",err);
+})
 app.use(session({
-   secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
+  store:store,
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    expires:Date.now()+1000 * 60 * 60 * 24 * 7,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    httpOnly: true
+  }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
