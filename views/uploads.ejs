@@ -1,0 +1,51 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="container-admin">
+
+  <h1>Uploaded Excel Files</h1>
+
+  <% if(files.length > 0){ %>
+
+    <div class="file-list">
+
+      <% files.forEach(file => { %>
+
+        <div class="file-item">
+
+          <span>
+            <%= file.replace(/^\d+-/, "") %>
+          </span>
+
+          <div class="file-actions">
+
+            <a href="/uploads/<%= file %>"
+               target="_blank"
+               class="open-btn">
+              Open
+            </a>
+
+            <!-- DELETE BUTTON -->
+            <form action="/delete-upload/<%= file %>?_method=DELETE"
+                  method="POST">
+
+              <button type="submit" class="delete-btn">
+                Delete
+              </button>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      <% }) %>
+
+    </div>
+
+  <% } else { %>
+
+    <p>No uploaded files found.</p>
+
+  <% } %>
+
+</div>

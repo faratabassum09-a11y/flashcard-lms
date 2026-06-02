@@ -1,0 +1,582 @@
+<% layout("layouts/boilerplate.ejs") %>
+
+<div class="profile-page">
+
+  <!-- LEFT -->
+  <div class="profile-left">
+
+    <!-- PROFILE CARD -->
+    <div class="profile-card hero-card">
+
+      <div class="hero-bg"></div>
+
+      <div class="profile-top">
+
+        <div class="profile-avatar">
+          <%= user.username[0].toUpperCase() %>
+        </div>
+
+        <div class="profile-info">
+          <h1><%= user.username %></h1>
+
+          <% if(user.username === "admin"){ %>
+            <span class="role-badge admin">
+              <i class="fa-solid fa-shield-halved"></i>
+              Administrator
+            </span>
+          <% } else { %>
+            <span class="role-badge student">
+              <i class="fa-solid fa-graduation-cap"></i>
+              Student
+            </span>
+          <% } %>
+
+        </div>
+
+      </div>
+
+      <div class="profile-details">
+
+        <div class="detail-box">
+          <i class="fa-solid fa-user"></i>
+
+          <div>
+            <span>Username</span>
+            <h3><%= user.username %></h3>
+          </div>
+        </div>
+
+        <div class="detail-box">
+          <i class="fa-solid fa-calendar"></i>
+
+          <div>
+            <span>Joined</span>
+            <h3>
+              <%= new Date(user.createdAt || Date.now()).toLocaleDateString() %>
+            </h3>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <% if(user.username !== "admin"){ %>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <i class="fa-solid fa-pen"></i>
+        </div>
+
+        <div>
+          <p>Tests Attempted</p>
+          <h2><%= totalTests %></h2>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+
+        <div>
+          <p>Total Marks</p>
+          <h2><%= totalMarks %></h2>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon purple">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+
+        <div>
+          <p>Average Score</p>
+          <h2>
+            <%= totalTests > 0 ? Math.round(totalMarks / totalTests) : 0 %>
+          </h2>
+        </div>
+      </div>
+
+    </div>
+
+    <% } %>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="profile-right">
+
+    <!-- RECENT RESULTS -->
+    <% if(user.username !== "admin"){ %>
+
+    <div class="profile-card">
+
+      <div class="card-header">
+        <h2>
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          Recent Activity
+        </h2>
+      </div>
+
+      <% if(recentResults.length > 0){ %>
+
+        <% recentResults.forEach(r => { %>
+
+          <div class="activity-card">
+
+            <div class="activity-left">
+
+              <div class="activity-icon">
+                <i class="fa-solid fa-file-pen"></i>
+              </div>
+
+              <div>
+                <h3>
+                  <%= r.testId?.name || "Deleted Test" %>
+                </h3>
+
+                <p>
+                  <%= r.testId?.subject || "No Subject" %>
+                </p>
+
+                <span>
+                  <%= new Date(r.submittedAt).toLocaleDateString() %>
+                </span>
+              </div>
+
+            </div>
+
+            <div class="score-circle">
+              <%= r.score %>/<%= r.total %>
+            </div>
+
+          </div>
+
+        <% }) %>
+
+      <% } else { %>
+
+        <div class="empty-state">
+          <i class="fa-solid fa-folder-open"></i>
+          <p>No test activity yet</p>
+        </div>
+
+      <% } %>
+
+    </div>
+
+    <% } %>
+
+  </div>
+
+</div>
+
+<style>
+
+.profile-page{
+  max-width:1300px;
+  margin:3rem auto;
+  padding:0 1.5rem;
+
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+}
+
+/* CARD */
+
+.profile-card{
+  position:relative;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.03),
+      rgba(255,255,255,.015)
+    );
+
+  border:1px solid rgba(255,255,255,.06);
+
+  border-radius:30px;
+
+  padding:2rem;
+
+  overflow:hidden;
+
+  backdrop-filter:blur(10px);
+
+  box-shadow:
+    0 20px 45px rgba(0,0,0,.28);
+}
+
+/* HERO */
+
+.hero-card{
+  min-height:320px;
+}
+
+.hero-bg{
+  position:absolute;
+
+  width:350px;
+  height:350px;
+
+  top:-120px;
+  right:-100px;
+
+  background:
+    radial-gradient(
+      rgba(91,124,255,.20),
+      transparent 70%
+    );
+}
+
+.profile-top{
+  display:flex;
+  align-items:center;
+  gap:20px;
+
+  position:relative;
+  z-index:2;
+}
+
+.profile-avatar{
+  width:100px;
+  height:100px;
+
+  border-radius:50%;
+
+  background:
+    linear-gradient(
+      135deg,
+      #5b7cff,
+      #7f96ff
+    );
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  color:#fff;
+
+  font-size:2.5rem;
+  font-weight:800;
+
+  box-shadow:
+    0 18px 40px rgba(91,124,255,.30);
+}
+
+.profile-info h1{
+  color:#fff;
+  font-size:2rem;
+
+  margin-bottom:10px;
+}
+
+.role-badge{
+  padding:.55rem 1rem;
+
+  border-radius:999px;
+
+  font-size:.82rem;
+  font-weight:600;
+
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+
+.role-badge.student{
+  background:rgba(91,124,255,.12);
+  color:#aebdff;
+}
+
+.role-badge.admin{
+  background:rgba(255,176,32,.12);
+  color:#ffd27b;
+}
+
+/* DETAILS */
+
+.profile-details{
+  margin-top:2rem;
+
+  display:grid;
+  gap:18px;
+}
+
+.detail-box{
+  background:#1e2230;
+
+  border:1px solid rgba(255,255,255,.05);
+
+  border-radius:22px;
+
+  padding:1.2rem;
+
+  display:flex;
+  align-items:center;
+  gap:16px;
+
+  transition:.22s ease;
+}
+
+.detail-box:hover{
+  transform:translateY(-2px);
+
+  border-color:rgba(91,124,255,.22);
+}
+
+.detail-box i{
+  width:54px;
+  height:54px;
+
+  border-radius:16px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #5b7cff,
+      #7f96ff
+    );
+
+  color:#fff;
+}
+
+.detail-box span{
+  color:#98a0b8;
+  font-size:.85rem;
+}
+
+.detail-box h3{
+  color:#fff;
+  margin-top:3px;
+}
+
+/* STATS */
+
+.stats-grid{
+  margin-top:24px;
+
+  display:grid;
+  gap:18px;
+}
+
+.stat-card{
+  background:#171c28;
+
+  border:1px solid rgba(255,255,255,.05);
+
+  border-radius:24px;
+
+  padding:1.4rem;
+
+  display:flex;
+  align-items:center;
+  gap:16px;
+
+  transition:.22s ease;
+}
+
+.stat-card:hover{
+  transform:translateY(-3px);
+
+  box-shadow:
+    0 18px 30px rgba(0,0,0,.22);
+}
+
+.stat-icon{
+  width:62px;
+  height:62px;
+
+  border-radius:18px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  color:#fff;
+
+  font-size:1.2rem;
+}
+
+.blue{
+  background:
+    linear-gradient(
+      135deg,
+      #5b7cff,
+      #7f96ff
+    );
+}
+
+.green{
+  background:
+    linear-gradient(
+      135deg,
+      #18c58f,
+      #33e0aa
+    );
+}
+
+.purple{
+  background:
+    linear-gradient(
+      135deg,
+      #8b5cf6,
+      #a978ff
+    );
+}
+
+.stat-card p{
+  color:#98a0b8;
+  margin-bottom:4px;
+}
+
+.stat-card h2{
+  color:#fff;
+  font-size:1.8rem;
+}
+
+/* RIGHT */
+
+.card-header{
+  margin-bottom:1.5rem;
+}
+
+.card-header h2{
+  color:#fff;
+
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* ACTIVITY */
+
+.activity-card{
+  background:#1d2230;
+
+  border:1px solid rgba(255,255,255,.05);
+
+  border-radius:22px;
+
+  padding:1rem 1.2rem;
+
+  margin-bottom:16px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  transition:.22s ease;
+}
+
+.activity-card:hover{
+  transform:translateY(-2px);
+
+  border-color:rgba(91,124,255,.18);
+}
+
+.activity-left{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.activity-icon{
+  width:58px;
+  height:58px;
+
+  border-radius:18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #5b7cff,
+      #7f96ff
+    );
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  color:#fff;
+}
+
+.activity-card h3{
+  color:#fff;
+  margin-bottom:4px;
+}
+
+.activity-card p{
+  color:#9aa3bc;
+  font-size:.9rem;
+}
+
+.activity-card span{
+  color:#737d99;
+  font-size:.78rem;
+}
+
+.score-circle{
+  min-width:70px;
+  height:70px;
+
+  border-radius:50%;
+
+  background:
+    linear-gradient(
+      135deg,
+      #18c58f,
+      #33e0aa
+    );
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  color:#fff;
+
+  font-weight:700;
+  font-size:.95rem;
+
+  box-shadow:
+    0 10px 24px rgba(24,197,143,.24);
+}
+
+/* EMPTY */
+
+.empty-state{
+  padding:3rem 1rem;
+
+  text-align:center;
+
+  color:#98a0b8;
+}
+
+.empty-state i{
+  font-size:3rem;
+  margin-bottom:1rem;
+
+  color:#5b7cff;
+}
+
+/* MOBILE */
+
+@media(max-width:950px){
+
+  .profile-page{
+    grid-template-columns:1fr;
+  }
+
+}
+
+</style>

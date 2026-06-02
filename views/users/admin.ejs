@@ -1,0 +1,367 @@
+<% layout('layouts/boilerplate') %>
+
+<!-- LOCAL FONT AWESOME (OFFLINE WORKING) -->
+<link rel="stylesheet" href="/fontawesome/css/all.min.css">
+
+<div class="container-admin">
+
+  <!-- HEADER -->
+  <div class="admin-header">
+    <h1 class="admin-title">
+      <i class="fa-solid fa-user-shield"></i>
+      Admin Panel
+    </h1>
+  </div>
+
+  <!-- TOP SECTION -->
+  <div class="top-section">
+
+    <!-- UPLOAD USERS -->
+    <div class="admin-card">
+
+      <h2>
+        <i class="fa-solid fa-users"></i>
+        Upload Users Excel
+      </h2>
+
+      <form
+        action="/upload-users"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+
+        <input
+          type="file"
+          name="file"
+          accept=".xlsx"
+          required
+        >
+
+        <div class="btn-group">
+
+          <button type="submit" class="btn-primary">
+            <i class="fa-solid fa-upload"></i>
+            Upload Users
+          </button>
+
+          <a href="/admin/uploads" class="show-btn">
+            <i class="fa-solid fa-folder-open"></i>
+            Show Uploads
+          </a>
+
+        </div>
+
+      </form>
+
+    </div>
+
+    <!-- UPLOAD FLASHCARDS -->
+    <div class="admin-card">
+
+      <h2>
+        <i class="fa-solid fa-book"></i>
+        Upload Flashcards
+      </h2>
+
+      <form
+        action="/upload-flashcards"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+
+        <input
+          type="text"
+          name="subject"
+          placeholder="Enter Subject"
+          required
+        >
+
+        <input
+          type="file"
+          name="file"
+          accept=".xlsx"
+          required
+        >
+
+        <button type="submit" class="btn-primary">
+          <i class="fa-solid fa-file-arrow-up"></i>
+          Upload Flashcards
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+  <!-- CREATE TEST -->
+  <div class="test-box">
+
+    <h2>
+      <i class="fa-solid fa-clipboard-question"></i>
+      Create Test
+    </h2>
+
+    <form action="/create-test" method="POST">
+
+      <!-- TEST NAME -->
+      <input
+        type="text"
+        name="name"
+        placeholder="Test Name"
+        required
+      >
+
+      <!-- DURATION -->
+      <input
+        type="number"
+        name="duration"
+        placeholder="Duration (minutes)"
+        min="1"
+        required
+      >
+
+      <!-- SCHEDULE -->
+      <label>Scheduled Start</label>
+
+      <input
+        type="datetime-local"
+        name="scheduledStart"
+      >
+
+      <label>Scheduled End</label>
+
+      <input
+        type="datetime-local"
+        name="scheduledEnd"
+      >
+
+      <!-- SUBJECT -->
+      <h3>
+        <i class="fa-solid fa-layer-group"></i>
+        Select Subject
+      </h3>
+
+      <select
+        name="subject"
+        id="subject-select"
+        onchange="filterQuestions()"
+        required
+      >
+
+        <% if (subjects && subjects.length > 0) { %>
+
+          <option value="">
+             Select Subject 
+          </option>
+
+          <% subjects.forEach(s => { %>
+
+            <option value="<%= s %>">
+              <%= s %>
+            </option>
+
+          <% }) %>
+
+        <% } else { %>
+
+          <option disabled>
+            No subjects found
+          </option>
+
+        <% } %>
+
+      </select>
+
+      <!-- SEARCH -->
+      <!-- <input
+        type="text"
+        id="questionSearch"
+        placeholder="Search Question..."
+      > -->
+
+      <!-- QUESTIONS -->
+      <h3>
+        <i class="fa-solid fa-list-check"></i>
+        Select Questions & Marks
+      </h3>
+
+      <div class="question-grid" id="questionList">
+
+        <% flashcards.forEach(f => { %>
+
+          <div
+            class="q-item"
+            data-subject="<%= f.subject %>"
+            data-question="<%= f.question.toLowerCase() %>"
+          >
+
+            <label class="question-label">
+
+              <input
+                type="checkbox"
+                class="question-checkbox"
+                name="questionIds"
+                value="<%= f._id %>"
+              >
+
+              <span>
+                <%= f.question %>
+              </span>
+
+            </label>
+
+            <!-- FIXED MARKS -->
+            <input
+              type="number"
+              class="marks-input"
+              name="marks"
+              value="5"
+              min="1"
+              disabled
+              required
+            >
+
+          </div>
+
+        <% }) %>
+
+      </div>
+
+      <!-- CREATE -->
+      <button type="submit" class="btn-create">
+
+        <i class="fa-solid fa-plus"></i>
+        Create Test
+
+      </button>
+
+    </form>
+
+  </div>
+
+  <!-- ACTION BUTTONS -->
+  <div class="admin-actions">
+
+    <a href="/admin/results" class="action-btn results">
+
+      <i class="fa-solid fa-chart-column"></i>
+      View Results
+
+    </a>
+
+    <a href="/tests" class="action-btn tests">
+
+      <i class="fa-solid fa-book-open"></i>
+      View Tests
+
+    </a>
+
+    <a href="/logout" class="action-btn logout">
+
+      <i class="fa-solid fa-right-from-bracket"></i>
+      Logout
+
+    </a>
+
+  </div>
+
+</div>
+
+<!-- SCRIPT -->
+<script>
+
+//
+// SUBJECT FILTER
+//
+function filterQuestions() {
+
+  const selected =
+    document.getElementById("subjectSelect").value;
+
+  const items =
+    document.querySelectorAll(".q-item");
+
+  items.forEach(item => {
+
+    const subject =
+      item.getAttribute("data-subject");
+
+    if (!selected) {
+
+      item.style.display = "block";
+      return;
+
+    }
+
+    item.style.display =
+      subject === selected
+        ? "block"
+        : "none";
+
+  });
+
+}
+
+//
+// SEARCH FILTER
+//
+document
+  .getElementById("questionSearch")
+  .addEventListener("input", function () {
+
+    const value =
+      this.value.toLowerCase();
+
+    document
+      .querySelectorAll(".q-item")
+      .forEach(item => {
+
+        const q =
+          item.getAttribute("data-question");
+
+        if (q.includes(value)) {
+          item.style.display = "block";
+        } else {
+          item.style.display = "none";
+        }
+
+      });
+
+  });
+
+//
+// ENABLE/DISABLE MARKS
+//
+document
+  .querySelectorAll(".q-item")
+  .forEach(item => {
+
+    const checkbox =
+      item.querySelector(".question-checkbox");
+
+    const marksInput =
+      item.querySelector(".marks-input");
+
+    checkbox.addEventListener("change", () => {
+
+      marksInput.disabled =
+        !checkbox.checked;
+
+    });
+
+  });
+
+//
+// SAFE DOM LOAD
+//
+window.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    filterQuestions();
+
+  }
+);
+
+</script>

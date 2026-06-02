@@ -1,0 +1,46 @@
+
+<% layout('layouts/boilerplate') %>
+<h1>Available Tests</h1>
+
+<% tests.forEach(t => { %>
+  <div style="border:1px solid #333;padding:14px;margin:10px;border-radius:8px;">
+    <h3><%= t.name %></h3>
+    <p>Subject: <%= t.subject %></p>
+    <p>Duration: <%= t.duration %> min</p>
+
+    <% if (currUser.username === "admin") { %>
+
+      <% if (!t.isActive && !t.isEnded) { %>
+        <form action="/admin/start-test/<%= t._id %>" method="POST" style="display:inline;">
+          <button>Start Test</button>
+        </form>
+      <% } else if (t.isActive && !t.isEnded) { %>
+        <p style="color:lime;font-weight:bold;">TEST RUNNING</p>
+        <form action="/admin/end-test/<%= t._id %>" method="POST" style="display:inline;">
+          <button style="background:red;color:white;">End Test</button>
+        </form>
+      <% } else { %>
+        <p style="color:red;font-weight:bold;">TEST ENDED</p>
+      <% } %>
+
+      <!-- DELETE button — available always for admin -->
+      <form action="/admin/delete-test/<%= t._id %>?_method=DELETE" method="POST"
+            style="display:inline;margin-left:10px;"
+            onsubmit="return confirm('Delete this test and all its results?')">
+        <button style="background:#555;color:white;">Delete</button>
+      </form>
+
+    <% } else { %>
+
+      <% if (t.isActive && !t.isEnded) { %>
+        <a href="/test/<%= t._id %>"><button>Start Test</button></a>
+      <% } else if (t.isEnded) { %>
+        <p style="color:red;">Test Ended</p>
+      <% } else { %>
+        <p style="color:gray;">Not available yet</p>
+      <% } %>
+
+    <% } %>
+
+  </div>
+<% }) %>

@@ -1,0 +1,60 @@
+<% layout('layouts/boilerplate') %>
+
+<div class="flash-wrapper">
+
+  <div class="flash-header">
+    <h1>Flashcards</h1>
+
+    <select id="subjectSelect" onchange="filterCards()" class="subject-select">
+      <option value="all">All Subjects</option>
+
+      <% if (subjects && subjects.length) { %>
+        <% subjects.forEach(s => { %>
+          <option value="<%= s %>"><%= s %></option>
+        <% }) %>
+      <% } %>
+    </select>
+  </div>
+
+  <div id="cardContainer" class="flash-grid">
+
+    <% flashcards.forEach(f => { %>
+
+      <div class="flash-card" data-subject="<%= f.subject %>" onclick="flip(this)">
+        
+        <div class="flash-card-inner">
+
+          <div class="flash-front">
+            <div class="flash-text"><%= f.question %></div>
+          </div>
+
+          <div class="flash-back">
+            <div class="flash-text"><%= f.answer %></div>
+          </div>
+
+        </div>
+
+      </div>
+
+    <% }) %>
+
+  </div>
+
+</div>
+
+<script>
+function filterCards() {
+  const selected = document.getElementById("subjectSelect").value;
+  const cards = document.querySelectorAll(".flash-card");
+
+  cards.forEach(card => {
+    const subject = card.getAttribute("data-subject");
+
+    if (selected === "all" || subject === selected) {
+      card.style.display = "block";
+    } else {
+      card.style.display = "none";
+    }
+  });
+}
+</script>

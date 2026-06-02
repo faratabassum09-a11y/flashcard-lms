@@ -1,0 +1,222 @@
+<% layout('layouts/boilerplate') %>
+
+<!-- FLASH MESSAGES (ONLY IF ANY) -->
+<% if (success && success.length) { %>
+  <div class="flash-msg success"><%= success %></div>
+<% } %>
+<% if (error && error.length) { %>
+  <div class="flash-msg error"><%= error %></div>
+<% } %>
+
+<!-- START SCREEN -->
+<div id="startScreen">
+  <h1><%= test.name %></h1>
+
+  <div class="instructions">
+    <h3>📌 Instructions</h3>
+    <ul>
+      <li>Full screen mode will be enabled</li>
+      <li>Do not switch tabs (auto submit will trigger)</li>
+      <li>Do not exit full screen</li>
+      <li>Time duration: <b><%= test.duration %> minutes</b></li>
+      <li>Answer all questions carefully</li>
+    </ul>
+  </div>
+
+  <button onclick="startTest()">Start Test</button>
+</div>
+
+<!-- TEST CONTAINER -->
+<div id="testContainer" style="display:none;">
+
+  <div id="timerBar">
+    ⏱ Time Left: <span id="timer">--:--</span>
+  </div>
+
+  <div id="wrapper">
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <% test.questions.forEach((q, i) => { %>
+        <button id="sideBtn<%= i %>" onclick="showQuestion(<%= i %>)">
+          <%= i + 1 %>
+        </button>
+      <% }) %>
+    </div>
+
+    <!-- MAIN -->
+    <div id="main">
+
+      <form id="testForm" method="POST" action="/submit-test">
+        <input type="hidden" name="testId" value="<%= test._id %>">
+
+        <% test.questions.forEach((q, i) => { 
+          const qId = q.questionId?._id ? q.questionId._id.toString() : q.questionId.toString();
+        %>
+
+        <div class="question <%= i === 0 ? 'active' : '' %>" id="q<%= i %>">
+
+          <h3>Q<%= i+1 %> (<%= q.marks %> marks)</h3>
+
+          <p><%= q.questionId.question %></p>
+
+          <textarea
+            name="answers[<%= qId %>]"
+            id="ans<%= i %>"
+            oninput="markAnswered(<%= i %>)"
+          ></textarea>
+
+          <button type="button" onclick="checkAnswer('<%= qId %>', <%= i %>)">
+            Check Match %
+          </button>
+
+          <div id="result<%= i %>"></div>
+
+          <div class="nav">
+            <% if (i > 0) { %>
+              <button type="button" onclick="showQuestion(<%= i-1 %>)">Prev</button>
+            <% } %>
+
+            <% if (i < test.questions.length - 1) { %>
+              <button type="button" onclick="showQuestion(<%= i+1 %>)">Next</button>
+            <% } %>
+          </div>
+
+        </div>
+
+        <% }) %>
+
+        <button type="button" onclick="confirmSubmit()" id="submitBtn">
+          Submit Test
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT OVERLAY -->
+<div id="submittedOverlay" style="display:none;">
+  <h2>Test Submitted</h2>
+  <p>You can close this tab.</p>
+</div>
+
+<script>
+let time = <%= remainingTime %>;
+let submitted = false;
+let started = false;
+
+/* START TEST */
+function startTest() {
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen;
+
+  if (req) {
+    req.call(el);
+  }
+
+  started = true;
+  document.getElementById("startScreen").style.display = "none";
+  document.getElementById("testContainer").style.display = "block";
+
+  startTimer();
+  showQuestion(0);
+}
+
+/* TIMER */
+function startTimer() {
+  const t = document.getElementById("timer");
+
+  const interval = setInterval(() => {
+    if (submitted) return clearInterval(interval);
+
+    let m = Math.floor(time / 60);
+    let s = time % 60;
+
+    t.textContent = `${m}:${s < 10 ? "0" : ""}${s}`;
+
+    if (time <= 0) {
+      clearInterval(interval);
+      autoSubmit();
+    }
+
+    time--;
+  }, 1000);
+}
+
+/* QUESTIONS */
+function showQuestion(i) {
+  document.querySelectorAll(".question").forEach(q => q.classList.remove("active"));
+  document.getElementById("q" + i).classList.add("active");
+}
+
+/* MARK */
+function markAnswered(i) {
+  const btn = document.getElementById("sideBtn" + i);
+  const val = document.getElementById("ans" + i).value;
+  if (btn) btn.classList.toggle("done", val.trim().length > 0);
+}
+
+/* CHECK */
+async function checkAnswer(id, i) {
+  const ans = document.getElementById("ans" + i).value;
+
+  const res = await fetch("/check-answer", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ questionId: id, answer: ans })
+  });
+
+  const data = await res.json();
+
+  document.getElementById("result" + i).innerText =
+    "Match: " + data.percent + "%";
+}
+
+/* SUBMIT */
+function confirmSubmit() {
+  if (confirm("Submit test?")) submitTest();
+}
+
+function submitTest() {
+  submitted = true;
+  document.getElementById("submittedOverlay").style.display = "flex";
+  document.getElementById("testForm").submit();
+}
+
+function autoSubmit() {
+  alert("Time over!");
+  submitTest();
+}
+
+/* TAB SWITCH */
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && started && !submitted) {
+    submitTest();
+  }
+});
+
+/* BLOCK ESC KEY + DEV TOOLS + SHORTCUTS */
+document.addEventListener("keydown", (e) => {
+
+  // ESC key → prevent exit / pause
+  if (e.key === "Escape") {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }
+
+  // block dev tools
+  if (e.key === "F12") {
+    e.preventDefault();
+    return false;
+  }
+
+  // block ctrl shortcuts
+  if (e.ctrlKey && ["c", "v", "x", "u", "p", "s"].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+    return false;
+  }
+});
+</script>

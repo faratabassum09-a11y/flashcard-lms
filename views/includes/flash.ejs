@@ -1,0 +1,46 @@
+<% if(success && success.length) { %>
+
+<div class="custom-flash success-flash">
+
+    <div class="flash-icon success-icon">
+        <i class="fa-solid fa-check"></i>
+    </div>
+
+    <div class="flash-content">
+        <%= success %>
+    </div>
+
+    <button 
+        type="button"
+        class="flash-close"
+    >
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+
+</div>
+
+<% } %>
+
+
+<% if(error && error.length) { %>
+
+<div class="custom-flash error-flash">
+
+    <div class="flash-icon error-icon">
+        <i class="fa-solid fa-xmark"></i>
+    </div>
+
+    <div class="flash-content">
+        <%= error %>
+    </div>
+
+    <button 
+        type="button"
+        class="flash-close"
+    >
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+
+</div>
+
+<% } %>

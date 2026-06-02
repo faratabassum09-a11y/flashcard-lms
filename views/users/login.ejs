@@ -1,0 +1,145 @@
+<% layout('layouts/boilerplate') %>
+
+<!-- LOCAL FONT AWESOME -->
+<link rel="stylesheet" href="/fontawesome/css/all.min.css">
+
+<div class="row mt-3">
+
+    <h1 class="col-6 offset-3">
+
+        <!-- <i class="fa-solid fa-right-to-bracket"></i> -->
+        Login on FlashPortal
+
+    </h1>
+
+    <div class="col-6 offset-3">
+
+        <form
+            action="/login"
+            method="POST"
+            class="needs-validation"
+            novalidate
+        >
+
+            <!-- USERNAME -->
+            <div class="mb-3">
+
+                <label for="username" class="form-label">
+
+                    <i class="fa-solid fa-user"></i>
+                    Username
+
+                </label>
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+
+                        <i class="fa-solid fa-user"></i>
+
+                    </span>
+
+                    <input
+                        name="username"
+                        id="username"
+                        type="text"
+                        class="form-control"
+                        placeholder="Enter username"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="mb-3">
+
+                <label for="password" class="form-label">
+
+                    <i class="fa-solid fa-lock"></i>
+                    Password
+
+                </label>
+
+                <div class="input-group">
+
+                    <!-- LEFT ICON -->
+                    <span class="input-group-text">
+
+                        <i class="fa-solid fa-key"></i>
+
+                    </span>
+
+                    <!-- PASSWORD INPUT -->
+                    <input
+                        name="password"
+                        id="password"
+                        type="password"
+                        class="form-control"
+                        placeholder="Enter password"
+                        required
+                    >
+
+                    <!-- EYE BUTTON -->
+                    <span
+                        class="input-group-text"
+                        style="cursor:pointer;"
+                        onclick="togglePassword()"
+                    >
+
+                        <i
+                            id="eyeIcon"
+                            class="fa-solid fa-eye"
+                        ></i>
+
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- BUTTON -->
+            <button class="btn btn-success">
+
+                <i class="fa-solid fa-right-to-bracket"></i>
+                Login
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- PASSWORD TOGGLE -->
+<script>
+
+function togglePassword() {
+
+    const password =
+        document.getElementById("password");
+
+    const eyeIcon =
+        document.getElementById("eyeIcon");
+
+    if (password.type === "password") {
+
+        password.type = "text";
+
+        eyeIcon.classList.remove("fa-eye");
+        eyeIcon.classList.add("fa-eye-slash");
+
+    } else {
+
+        password.type = "password";
+
+        eyeIcon.classList.remove("fa-eye-slash");
+        eyeIcon.classList.add("fa-eye");
+
+    }
+
+}
+
+</script>
