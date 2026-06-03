@@ -1,0 +1,185 @@
+<%- layout("layouts/boilerplate") %>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:      #0f1117;
+    --surface: #1a1d27;
+    --border:  #2a2d3a;
+    --accent:  #4f8ef7;
+    --muted:   #6b7280;
+    --text:    #e8eaf0;
+    --text-dim:#9ca3af;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  .view-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.3;
+  }
+
+  .page-header h1 small {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 400;
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+    margin-top: 0.25rem;
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    transition: border-color 0.2s, color 0.2s;
+    flex-shrink: 0;
+  }
+  .back-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .meta-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+  }
+  .meta-strip span strong { color: var(--text); font-weight: 500; }
+
+  .data-table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    font-size: 0.85rem;
+  }
+
+  .data-table th {
+    background: #13151f;
+    padding: 0.7rem 1rem;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .data-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+    max-width: 340px;
+    word-break: break-word;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .data-table tr:hover td { background: rgba(79,142,247,0.05); }
+
+  .num-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+    width: 48px;
+  }
+
+  .mono { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--text-dim); }
+</style>
+
+<div class="view-page">
+
+  <div class="page-header">
+    <h1>
+      Upload Contents
+      <small>📄 <%= uploadDoc.filename %></small>
+    </h1>
+    <a href="/admin/uploads" class="back-btn">← Back to Uploads</a>
+  </div>
+
+  <div class="meta-strip">
+    <span><strong>Type:</strong> <%= uploadDoc.type === 'users' ? '👤 Users' : '🃏 Flashcards' %></span>
+    <% if (uploadDoc.subject) { %>
+      <span><strong>Subject:</strong> <%= uploadDoc.subject %></span>
+    <% } %>
+    <span><strong>Rows:</strong> <%= uploadDoc.rows.length %></span>
+    <span><strong>Uploaded:</strong> <%= new Date(uploadDoc.uploadedAt).toLocaleString() %></span>
+  </div>
+
+  <%
+    const rows = uploadDoc.rows;
+    const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
+  %>
+
+  <% if (rows.length === 0) { %>
+    <p style="color: var(--muted); text-align:center; padding: 2rem;">No rows found in this upload.</p>
+  <% } else { %>
+    <div class="data-table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="num-cell">#</th>
+            <% columns.forEach(col => { %>
+              <th><%= col %></th>
+            <% }) %>
+          </tr>
+        </thead>
+        <tbody>
+          <% rows.forEach((row, i) => { %>
+            <tr>
+              <td class="num-cell mono"><%= i + 1 %></td>
+              <% columns.forEach(col => { %>
+                <td><%= row[col] !== undefined ? row[col] : '—' %></td>
+              <% }) %>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+
+</div>
