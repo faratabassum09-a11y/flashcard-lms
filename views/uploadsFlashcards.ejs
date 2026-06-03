@@ -21,16 +21,16 @@
       border-radius:10px;
     ">
 
-      <h3><%= file %></h3>
+      <h3><%= file.fileName %></h3>
 
-      <a href="/uploads/flashcards/<%= file %>" target="_blank">
+      <a href="/uploads/flashcards/<%= file.fileName %>" target="_blank">
         View File
       </a>
 
       <br><br>
 
       <form
-        action="/delete-flashcard-upload/<%= file %>?_method=DELETE"
+        action="/delete-flashcard-upload/<%= file._id %>?_method=DELETE"
         method="POST"
       >
         <button type="submit">
