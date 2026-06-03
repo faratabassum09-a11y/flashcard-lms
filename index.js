@@ -114,9 +114,9 @@ app.use(methodOverride("_method"));
 
 const store = MongoStore.create({
   mongoUrl: process.env.MONGO_URI,
-  crypto: {
-    secret: process.env.SESSION_SECRET
-  },
+  // crypto: {
+  //   secret: process.env.SESSION_SECRET
+  // },
   touchAfter: 24 * 3600
 });
 
@@ -219,7 +219,9 @@ cron.schedule("* * * * *", async () => {
 });
 
 
-app.get("/", (req, res) => res.send("home page"));
+app.get("/", (req, res) => {
+  res.redirect("/login");
+});
 
 app.get("/login", (req, res) => res.render("users/login.ejs"));
 
