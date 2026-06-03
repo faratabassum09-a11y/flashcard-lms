@@ -7,7 +7,7 @@ module.exports = (req, res, next) => {
       "Please login first"
     );
 
-    return res.redirect("/login");
+    return res.redirect("/");
   }
 
   next();

@@ -219,16 +219,16 @@ cron.schedule("* * * * *", async () => {
 });
 
 
-app.get("/", (req, res) => {
-  res.redirect("/login");
-});
+// app.get("/", (req, res) => {
+//   res.redirect("/");
+// });
 
-app.get("/login", (req, res) => res.render("users/login.ejs"));
+app.get("/", (req, res) => res.render("users/.ejs"));
 
-app.post("/login",
-  passport.authenticate("local", { failureRedirect: "/login", failureFlash: true }),
+app.post("/",
+  passport.authenticate("local", { failureRedirect: "/", failureFlash: true }),
   (req, res) => {
-    if (!req.user) return res.redirect("/login");
+    if (!req.user) return res.redirect("/");
     if (req.user.username === "admin") return res.redirect("/admin");
     return res.redirect("/dashboard");
   }
@@ -241,9 +241,9 @@ app.get("/dashboard",isLoggedIn, (req, res) => {
       "Please login first"
     );
 
-    return res.redirect("/login");
+    return res.redirect("/");
   }
-  if (!req.user) return res.redirect("/login");
+  if (!req.user) return res.redirect("/");
   res.render("dashboard", { username: req.user.username });
 });
 
@@ -448,13 +448,13 @@ app.get("/tests", isLoggedIn, async (req, res) => {
 });
 
 app.get("/read", isLoggedIn,async (req, res) => {
-  if (!req.user) return res.redirect("/login");
+  if (!req.user) return res.redirect("/");
   const flashcards = await Flashcard.find();
   res.render("read", { flashcards, currUser: req.user });
 });
 
 app.get("/test/:id", isLoggedIn,async (req, res) => {
-  if (!req.user) return res.redirect("/login");
+  if (!req.user) return res.redirect("/");
 
 const test = await Test.findById(req.params.id)
   .populate("questions.questionId");
@@ -522,7 +522,7 @@ test.questions = shuffleArray(test.questions);
 
 app.post("/submit-test",isLoggedIn, async (req, res) => {
   try {
-    if (!req.user) return res.redirect("/login");
+    if (!req.user) return res.redirect("/");
 
     const { testId, answers } = req.body;
     console.log("SUBMIT — testId:", testId);
@@ -1014,7 +1014,7 @@ app.get("/logout", (req, res, next) => {
 
     req.flash("success", "Logged out successfully");
 
-    res.redirect("/login");
+    res.redirect("/");
   });
 });
 
@@ -1025,10 +1025,10 @@ app.get("/profile",isLoggedIn, async (req, res) => {
       "Please login first"
     );
 
-    return res.redirect("/login");
+    return res.redirect("/");
   }
   if(!req.user){
-    return res.redirect("/login");
+    return res.redirect("/");
   }
 
   const user = await User.findById(req.user._id);
@@ -1064,11 +1064,11 @@ app.get("/settings",isLoggedIn, async (req, res) => {
       "Please login first"
     );
 
-    return res.redirect("/login");
+    return res.redirect("/");
   }
 
   if (!req.user) {
-    return res.redirect("/login");
+    return res.redirect("/");
   }
 
   const user = await User.findById(req.user._id);
