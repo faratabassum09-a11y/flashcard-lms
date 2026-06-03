@@ -103,7 +103,7 @@
 </div>
 
 <script>
-let time = <%= remainingTime %>;
+let time = <%=remainingTime%>;
 let submitted = false;
 let started = false;
 
@@ -180,11 +180,12 @@ function confirmSubmit() {
 }
 
 function submitTest() {
+  if (submitted) return;
+
   submitted = true;
   document.getElementById("submittedOverlay").style.display = "flex";
   document.getElementById("testForm").submit();
 }
-
 function autoSubmit() {
   alert("Time over!");
   submitTest();
@@ -197,14 +198,13 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-/* BLOCK ESC KEY + DEV TOOLS + SHORTCUTS */
 document.addEventListener("keydown", (e) => {
 
-  // ESC key → prevent exit / pause
+  // ESC key → submit
   if (e.key === "Escape") {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
+    if (started && !submitted) {
+      submitTest();
+    }
   }
 
   // block dev tools
@@ -213,10 +213,29 @@ document.addEventListener("keydown", (e) => {
     return false;
   }
 
-  // block ctrl shortcuts
+  // Ctrl shortcuts
   if (e.ctrlKey && ["c", "v", "x", "u", "p", "s"].includes(e.key.toLowerCase())) {
     e.preventDefault();
     return false;
   }
+
+  // Ctrl+Shift+I
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "i") {
+    e.preventDefault();
+    return false;
+  }
+
+  // Ctrl+Shift+J
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "j") {
+    e.preventDefault();
+    return false;
+  }
+
+  // Ctrl+Shift+C
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "c") {
+    e.preventDefault();
+    return false;
+  }
 });
+
 </script>
