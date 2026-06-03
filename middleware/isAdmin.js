@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
       "Please login first"
     );
 
-    return res.redirect("/");
+    return res.redirect("/login");
   }
 
   // NOT ADMIN
