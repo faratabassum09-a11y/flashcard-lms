@@ -18,14 +18,14 @@
 
           <div class="file-actions">
 
-            <a href="/uploads/<%= file %>"
+            <a href="/uploads/<%= file.fileName %>"
                target="_blank"
                class="open-btn">
               Open
             </a>
 
             <!-- DELETE BUTTON -->
-            <form action="/delete-upload/<%= file %>?_method=DELETE"
+            <form action="/delete-upload/<%= file.fileName %>?_method=DELETE"
                   method="POST">
 
               <button type="submit" class="delete-btn">
