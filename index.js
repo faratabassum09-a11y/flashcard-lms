@@ -46,59 +46,59 @@ const expressLayouts = require("express-ejs-layouts");
 
 app.set("layout", "layouts/boilerplate");
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
 
-    const uploadPath = path.join(__dirname, "uploads", "users");
+//     const uploadPath = path.join(__dirname, "uploads", "users");
 
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
+//     if (!fs.existsSync(uploadPath)) {
+//       fs.mkdirSync(uploadPath, { recursive: true });
+//     }
 
-    cb(null, uploadPath);
-  },
+//     cb(null, uploadPath);
+//   },
 
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  }
-});
+//   filename: (req, file, cb) => {
+//     cb(null, Date.now() + "-" + file.originalname);
+//   }
+// });
 
-const flashcardStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
+// const flashcardStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
 
-    const uploadPath = path.join(__dirname, "uploads", "flashcards");
+//     const uploadPath = path.join(__dirname, "uploads", "flashcards");
 
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
+//     if (!fs.existsSync(uploadPath)) {
+//       fs.mkdirSync(uploadPath, { recursive: true });
+//     }
 
-    cb(null, uploadPath);
-  },
+//     cb(null, uploadPath);
+//   },
 
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  }
-});
+//   filename: (req, file, cb) => {
+//     cb(null, Date.now() + "-" + file.originalname);
+//   }
+// });
 
-const uploadFlashcards = multer({ storage: flashcardStorage });
-const uploadUsers = multer({ storage });
-const upload = multer({ storage });
-const uploadDir = path.join(__dirname, "uploads");
+// const uploadFlashcards = multer({ storage: flashcardStorage });
+// const uploadUsers = multer({ storage });
+// const upload = multer({ storage });
+// const uploadDir = path.join(__dirname, "uploads");
 
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+// if (!fs.existsSync(uploadDir)) {
+//   fs.mkdirSync(uploadDir);
+// }
 
-const usersDir = path.join(__dirname, "uploads/users");
-const flashcardsDir = path.join(__dirname, "uploads/flashcards");
+// const usersDir = path.join(__dirname, "uploads/users");
+// const flashcardsDir = path.join(__dirname, "uploads/flashcards");
 
-if (!fs.existsSync(usersDir)) {
-  fs.mkdirSync(usersDir);
-}
+// if (!fs.existsSync(usersDir)) {
+//   fs.mkdirSync(usersDir);
+// }
 
-if (!fs.existsSync(flashcardsDir)) {
-  fs.mkdirSync(flashcardsDir);
-}
+// if (!fs.existsSync(flashcardsDir)) {
+//   fs.mkdirSync(flashcardsDir);
+// }
 
 
 const User = require("./models/user.js");
@@ -114,9 +114,9 @@ app.use(methodOverride("_method"));
 
 const store = MongoStore.create({
   mongoUrl: process.env.MONGO_URI,
-  // crypto: {
-  //   secret: process.env.SESSION_SECRET
-  // },
+  crypto: {
+    secret: process.env.SESSION_SECRET
+  },
   touchAfter: 24 * 3600
 });
 
@@ -219,16 +219,16 @@ cron.schedule("* * * * *", async () => {
 });
 
 
-// app.get("/", (req, res) => {
-//   res.redirect("/");
-// });
+app.get("/", (req, res) => {
+  res.redirect("/login");
+});
 
-app.get("/", (req, res) => res.render("users/.ejs"));
+app.get("/login", (req, res) => res.render("users/.ejs"));
 
-app.post("/",
-  passport.authenticate("local", { failureRedirect: "/", failureFlash: true }),
+app.post("/login",
+  passport.authenticate("local", { failureRedirect: "/login", failureFlash: true }),
   (req, res) => {
-    if (!req.user) return res.redirect("/");
+    if (!req.user) return res.redirect("/login");
     if (req.user.username === "admin") return res.redirect("/admin");
     return res.redirect("/dashboard");
   }
@@ -241,9 +241,9 @@ app.get("/dashboard",isLoggedIn, (req, res) => {
       "Please login first"
     );
 
-    return res.redirect("/");
+    return res.redirect("/login");
   }
-  if (!req.user) return res.redirect("/");
+  if (!req.user) return res.redirect("/login");
   res.render("dashboard", { username: req.user.username });
 });
 
@@ -448,13 +448,13 @@ app.get("/tests", isLoggedIn, async (req, res) => {
 });
 
 app.get("/read", isLoggedIn,async (req, res) => {
-  if (!req.user) return res.redirect("/");
+  if (!req.user) return res.redirect("/login");
   const flashcards = await Flashcard.find();
   res.render("read", { flashcards, currUser: req.user });
 });
 
 app.get("/test/:id", isLoggedIn,async (req, res) => {
-  if (!req.user) return res.redirect("/");
+  if (!req.user) return res.redirect("/login");
 
 const test = await Test.findById(req.params.id)
   .populate("questions.questionId");
@@ -522,7 +522,7 @@ test.questions = shuffleArray(test.questions);
 
 app.post("/submit-test",isLoggedIn, async (req, res) => {
   try {
-    if (!req.user) return res.redirect("/");
+    if (!req.user) return res.redirect("/login");
 
     const { testId, answers } = req.body;
     console.log("SUBMIT — testId:", testId);
@@ -1014,7 +1014,7 @@ app.get("/logout", (req, res, next) => {
 
     req.flash("success", "Logged out successfully");
 
-    res.redirect("/");
+    res.redirect("/login");
   });
 });
 
@@ -1025,10 +1025,10 @@ app.get("/profile",isLoggedIn, async (req, res) => {
       "Please login first"
     );
 
-    return res.redirect("/");
+    return res.redirect("/login");
   }
   if(!req.user){
-    return res.redirect("/");
+    return res.redirect("/login");
   }
 
   const user = await User.findById(req.user._id);
@@ -1064,11 +1064,11 @@ app.get("/settings",isLoggedIn, async (req, res) => {
       "Please login first"
     );
 
-    return res.redirect("/");
+    return res.redirect("/login");
   }
 
   if (!req.user) {
-    return res.redirect("/");
+    return res.redirect("/login");
   }
 
   const user = await User.findById(req.user._id);
