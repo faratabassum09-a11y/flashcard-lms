@@ -120,7 +120,7 @@ const store = MongoStore.create({
   touchAfter: 24 * 3600
 });
 
-store.on("error",()=>{
+store.on("error",(err)=>{
   console.log("Error in mongo session store",err);
 })
 app.use(session({
@@ -1295,6 +1295,12 @@ app.delete("/delete-flashcard-upload/:filename", isLoggedIn, isAdmin, async (req
 // app.get("/help", (req, res) => {
 //   res.render("help.ejs");
 // });
+// console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
+// console.log("SESSION_SECRET exists:", !!process.env.SESSION_SECRET);
+// console.log(
+//   "SESSION_SECRET preview:",
+//   process.env.SESSION_SECRET?.substring(0, 20)
+// );
 app.use((req, res, next) => {
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private, max-age=0");
   res.setHeader("Pragma", "no-cache");
