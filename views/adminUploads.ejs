@@ -1,0 +1,311 @@
+<%- layout("layouts/boilerplate") %>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:       #0f1117;
+    --surface:  #1a1d27;
+    --border:   #2a2d3a;
+    --accent:   #4f8ef7;
+    --danger:   #f75a5a;
+    --success:  #4fcf8e;
+    --muted:    #6b7280;
+    --text:     #e8eaf0;
+    --text-dim: #9ca3af;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  .uploads-page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  .page-header h1 span {
+    color: var(--accent);
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .back-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section { margin-bottom: 2.5rem; }
+
+  .upload-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .upload-table th {
+    background: #13151f;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .upload-table td {
+    padding: 0.9rem 1rem;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .upload-table tr:last-child td { border-bottom: none; }
+  .upload-table tr:hover td { background: rgba(79,142,247,0.04); }
+
+  .filename {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--accent);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .badge-users      { background: rgba(79,142,247,0.15); color: #7aadff; }
+  .badge-flashcards { background: rgba(79,207,142,0.15); color: #5ed4a0; }
+
+  .row-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  .date-text {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .btn-view {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.85rem;
+    background: rgba(79,142,247,0.12);
+    border: 1px solid rgba(79,142,247,0.3);
+    border-radius: 6px;
+    color: #7aadff;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .btn-view:hover { background: rgba(79,142,247,0.22); border-color: var(--accent); }
+
+  .btn-delete {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.85rem;
+    background: rgba(247,90,90,0.1);
+    border: 1px solid rgba(247,90,90,0.25);
+    border-radius: 6px;
+    color: #f78a8a;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .btn-delete:hover { background: rgba(247,90,90,0.2); border-color: var(--danger); }
+
+  .empty-state {
+    padding: 2.5rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+  }
+  .empty-state svg { margin-bottom: 0.75rem; opacity: 0.4; }
+
+  .flash-msg {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+  }
+  .flash-success { background: rgba(79,207,142,0.12); border: 1px solid rgba(79,207,142,0.3); color: #5ed4a0; }
+  .flash-error   { background: rgba(247,90,90,0.12);  border: 1px solid rgba(247,90,90,0.3);  color: #f78a8a; }
+</style>
+
+<div class="uploads-page">
+
+  <div class="page-header">
+    <h1>Upload <span>Manager</span></h1>
+    <a href="/admin" class="back-btn">
+      ← Back to Admin
+    </a>
+  </div>
+
+  <% if (success && success.length > 0) { %>
+    <div class="flash-msg flash-success"><%= success[0] %></div>
+  <% } %>
+  <% if (error && error.length > 0) { %>
+    <div class="flash-msg flash-error"><%= error[0] %></div>
+  <% } %>
+
+  <!--  User Uploads  -->
+  <div class="section">
+    <div class="section-title">👤 User Uploads</div>
+
+    <% if (userUploads.length === 0) { %>
+      <div class="empty-state">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <p>No user uploads yet.</p>
+      </div>
+    <% } else { %>
+      <table class="upload-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>File Name</th>
+            <th>Rows</th>
+            <th>Uploaded</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% userUploads.forEach((u, i) => { %>
+            <tr>
+              <td class="row-count"><%= i + 1 %></td>
+              <td class="filename">📄 <%= u.filename %></td>
+              <td class="row-count"><%= u.rows.length %> rows</td>
+              <td class="date-text"><%= new Date(u.uploadedAt).toLocaleString() %></td>
+              <td>
+                <div class="btn-group">
+                  <a href="/admin/uploads/view/<%= u._id %>" class="btn-view">
+                    👁 View
+                  </a>
+                  <form action="/admin/uploads/delete/<%= u._id %>?_method=DELETE" method="POST"
+                        onsubmit="return confirm('Delete this upload and remove all its users from the database?')">
+                    <button type="submit" class="btn-delete">🗑 Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <!--  Flashcard Uploads  -->
+  <div class="section">
+    <div class="section-title">🃏 Flashcard Uploads</div>
+
+    <% if (flashcardUploads.length === 0) { %>
+      <div class="empty-state">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <p>No flashcard uploads yet.</p>
+      </div>
+    <% } else { %>
+      <table class="upload-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>File Name</th>
+            <th>Subject</th>
+            <th>Rows</th>
+            <th>Uploaded</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% flashcardUploads.forEach((u, i) => { %>
+            <tr>
+              <td class="row-count"><%= i + 1 %></td>
+              <td class="filename">📄 <%= u.filename %></td>
+              <td><span class="badge badge-flashcards"><%= u.subject || "—" %></span></td>
+              <td class="row-count"><%= u.rows.length %> rows</td>
+              <td class="date-text"><%= new Date(u.uploadedAt).toLocaleString() %></td>
+              <td>
+                <div class="btn-group">
+                  <a href="/admin/uploads/view/<%= u._id %>" class="btn-view">
+                    👁 View
+                  </a>
+                  <form action="/admin/uploads/delete/<%= u._id %>?_method=DELETE" method="POST"
+                        onsubmit="return confirm('Delete this upload and remove all its flashcards from the database?')">
+                    <button type="submit" class="btn-delete">🗑 Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+</div>
