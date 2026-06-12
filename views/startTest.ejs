@@ -1,4 +1,91 @@
-<% layout('layouts/boilerplate') %>
+<% layout('layouts/blank') %>
+
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; font-family: Arial, sans-serif; background: #f4f6f9; color: #111; }
+
+  #startScreen { text-align: center; margin-top: 100px; padding: 0 20px; }
+  #startScreen h1 { font-size: 26px; margin-bottom: 10px; }
+  .instructions {
+    max-width: 480px; margin: 20px auto; text-align: left;
+    background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 18px 22px;
+  }
+  .instructions h3 { margin-top: 0; }
+  .instructions ul { padding-left: 20px; line-height: 1.6; }
+  #startScreen button {
+    padding: 12px 32px; font-size: 16px; cursor: pointer;
+    background: #111; color: #fff; border: none; border-radius: 8px; margin-top: 10px;
+  }
+
+  #testContainer { height: 100vh; }
+  #wrapper { display: flex; height: calc(100% - 50px); }
+
+  #timerBar {
+    font-size: 18px; font-weight: bold; padding: 10px 20px;
+    background: #fff; border-bottom: 1px solid #ddd;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  #timerBar.warning { color: red; }
+  #violationCount { font-size: 13px; font-weight: normal; color: #c0392b; }
+
+  #sidebar {
+    width: 130px; min-width: 130px; border-right: 1px solid #ddd;
+    padding: 12px 8px; background: #fff; overflow-y: auto;
+    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
+  }
+  #sidebar button {
+    width: 44px; height: 44px; cursor: pointer;
+    background: #fff; color: #111; border: 1px solid #ccc; border-radius: 6px;
+    font-size: 14px;
+  }
+  #sidebar button.activeBtn { background: #111; color: #fff; }
+  #sidebar button.done { border-color: #2d8a4e; color: #2d8a4e; }
+  #sidebar button.done.activeBtn { background: #2d8a4e; color: #fff; border-color: #2d8a4e; }
+
+  #main { flex: 1; padding: 20px; overflow-y: auto; background: #f9f9f9; }
+
+  .question { padding: 18px; border: 1px solid #ddd; margin-top: 10px; border-radius: 10px; background: #fff; display: none; }
+  .question.active { display: block; }
+  .question p { font-size: 16px; margin-bottom: 12px; }
+
+  textarea {
+    width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;
+    font-size: 15px; resize: vertical; min-height: 100px;
+    user-select: none;
+  }
+  #main div[id^="result"] { margin-top: 8px; font-weight: bold; color: #1a7a40; }
+  .nav { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .nav button { padding: 8px 18px; cursor: pointer; border: 1px solid #ccc; border-radius: 6px; background: #fff; }
+  #submitBtn { margin-top: 20px; padding: 12px 32px; background: #c0392b; color: #fff; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+
+  #submittedOverlay {
+    position: fixed; inset: 0; background: #111; color: #fff;
+    font-size: 28px; font-weight: bold;
+    align-items: center; justify-content: center;
+    z-index: 99999; text-align: center; flex-direction: column; gap: 16px;
+  }
+  #submittedOverlay p { font-size: 16px; color: #aaa; margin: 0; }
+
+  #warningBanner {
+    display: none; position: fixed; top: 0; left: 0; right: 0;
+    background: #c0392b; color: #fff; text-align: center;
+    padding: 14px; font-size: 16px; font-weight: bold; z-index: 9999;
+    flex-direction: column; gap: 10px; align-items: center;
+  }
+  #warningBanner.show { display: flex; }
+  #resumeBtn {
+    padding: 8px 20px; border: 1px solid #fff; border-radius: 6px;
+    background: transparent; color: #fff; cursor: pointer; font-size: 14px;
+  }
+  #resumeBtn:hover { background: #fff; color: #c0392b; }
+
+  #testContainer { user-select: none; -webkit-user-select: none; -moz-user-select: none; }
+  #testContainer textarea, #testContainer input { -webkit-user-select: text; -moz-user-select: text; user-select: text; }
+
+  .flash-msg { padding: 12px 20px; margin: 10px auto; max-width: 600px; border-radius: 8px; font-weight: bold; text-align: center; }
+  .flash-msg.success { background: #d4edda; color: #1a7a40; }
+  .flash-msg.error { background: #f8d7da; color: #c0392b; }
+</style>
 
 <!-- FLASH MESSAGES (ONLY IF ANY) -->
 <% if (success && success.length) { %>
@@ -7,6 +94,12 @@
 <% if (error && error.length) { %>
   <div class="flash-msg error"><%= error %></div>
 <% } %>
+
+<!-- WARNING BANNER (fullscreen exit) -->
+<div id="warningBanner">
+  <div>⚠️ Return to fullscreen! Auto-submitting in <span id="warnCount">5</span>s...</div>
+  <button id="resumeBtn" onclick="resumeFullscreen()">Resume Fullscreen</button>
+</div>
 
 <!-- START SCREEN -->
 <div id="startScreen">
@@ -17,7 +110,8 @@
     <ul>
       <li>Full screen mode will be enabled</li>
       <li>Do not switch tabs (auto submit will trigger)</li>
-      <li>Do not exit full screen</li>
+      <li>Do not exit full screen (you'll get a 5s warning to return)</li>
+      <li>Copy, paste, and dev tools shortcuts are disabled</li>
       <li>Time duration : <b><%= test.duration %> minutes</b></li>
       <li>Answer all questions carefully</li>
     </ul>
@@ -30,7 +124,8 @@
 <div id="testContainer" style="display:none;">
 
   <div id="timerBar">
-    ⏱ Time Left: <span id="timer">--:--</span>
+    <span>⏱ Time Left: <span id="timer">--:--</span></span>
+    <span id="violationCount"></span>
   </div>
 
   <div id="wrapper">
@@ -50,7 +145,7 @@
       <form id="testForm" method="POST" action="/submit-test">
         <input type="hidden" name="testId" value="<%= test._id %>">
 
-        <% test.questions.forEach((q, i) => { 
+        <% test.questions.forEach((q, i) => {
           const qId = q.questionId?._id ? q.questionId._id.toString() : q.questionId.toString();
         %>
 
@@ -63,6 +158,7 @@
           <textarea
             name="answers[<%= qId %>]"
             id="ans<%= i %>"
+            placeholder="Type your answer here..."
             oninput="markAnswered(<%= i %>)"
           ></textarea>
 
@@ -76,7 +172,6 @@
             <% if (i > 0) { %>
               <button type="button" onclick="showQuestion(<%= i-1 %>)">Prev</button>
             <% } %>
-            &nbsp;  &nbsp;
             <% if (i < test.questions.length - 1) { %>
               <button type="button" onclick="showQuestion(<%= i+1 %>)">Next</button>
             <% } %>
@@ -98,35 +193,51 @@
 
 <!-- SUBMIT OVERLAY -->
 <div id="submittedOverlay" style="display:none;">
-  <h2>Test Submitted</h2>
+  ✅ Test Submitted
   <p>You can close this tab.</p>
 </div>
 
 <script>
-let time = <%=remainingTime%>;
+let time = <%= remainingTime %>;
 let submitted = false;
 let started = false;
+let fsWarningTimer = null;
+let violations = 0;
 
-/* START TEST */
+/* ── START ──
+   Must be called synchronously from the click (a direct user gesture),
+   otherwise requestFullscreen() will be rejected by the browser. */
 function startTest() {
-  const el = document.documentElement;
-  const req = el.requestFullscreen || el.webkitRequestFullscreen;
-
-  if (req) {
-    req.call(el);
-  }
-
-  started = true;
-  document.getElementById("startScreen").style.display = "none";
-  document.getElementById("testContainer").style.display = "block";
-
-  startTimer();
-  showQuestion(0);
+  enterFullscreen()
+    .then(() => {
+      started = true;
+      document.getElementById("startScreen").style.display = "none";
+      document.getElementById("testContainer").style.display = "block";
+      startTimer();
+      showQuestion(0);
+    })
+    .catch(() => {
+      alert("Fullscreen permission denied or unsupported. Please allow fullscreen and click 'Start Test' again.");
+    });
 }
 
-/* TIMER */
+function enterFullscreen() {
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+  if (!req) return Promise.reject(new Error("Fullscreen API not supported"));
+  return req.call(el);
+}
+
+function resumeFullscreen() {
+  enterFullscreen().catch(() => {
+    alert("Could not re-enter fullscreen. Click 'Resume Fullscreen' again.");
+  });
+}
+
+/* ── TIMER ── */
 function startTimer() {
   const t = document.getElementById("timer");
+  const bar = document.getElementById("timerBar");
 
   const interval = setInterval(() => {
     if (submitted) return clearInterval(interval);
@@ -135,107 +246,209 @@ function startTimer() {
     let s = time % 60;
 
     t.textContent = `${m}:${s < 10 ? "0" : ""}${s}`;
+    if (time <= 60) bar.classList.add("warning");
 
     if (time <= 0) {
       clearInterval(interval);
-      autoSubmit();
+      autoSubmit("Time over!");
     }
 
     time--;
   }, 1000);
 }
 
-/* QUESTIONS */
+/* ── QUESTIONS ── */
 function showQuestion(i) {
   document.querySelectorAll(".question").forEach(q => q.classList.remove("active"));
+  document.querySelectorAll("#sidebar button").forEach(b => b.classList.remove("activeBtn"));
   document.getElementById("q" + i).classList.add("active");
+  const btn = document.getElementById("sideBtn" + i);
+  if (btn) btn.classList.add("activeBtn");
 }
 
-/* MARK */
 function markAnswered(i) {
   const btn = document.getElementById("sideBtn" + i);
   const val = document.getElementById("ans" + i).value;
   if (btn) btn.classList.toggle("done", val.trim().length > 0);
 }
 
-/* CHECK */
+/* ── CHECK ANSWER ── */
 async function checkAnswer(id, i) {
   const ans = document.getElementById("ans" + i).value;
-
-  const res = await fetch("/check-answer", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ questionId: id, answer: ans })
-  });
-
-  const data = await res.json();
-
-  document.getElementById("result" + i).innerText =
-    "Match: " + data.percent + "%";
+  try {
+    const res = await fetch("/check-answer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ questionId: id, answer: ans })
+    });
+    const data = await res.json();
+    document.getElementById("result" + i).innerText = "Match: " + data.percent + "%";
+  } catch (e) {
+    document.getElementById("result" + i).innerText = "Error checking answer";
+  }
 }
 
-/* SUBMIT */
+/* ── SUBMIT ── */
 function confirmSubmit() {
-  if (confirm("Submit test?")) submitTest();
+  if (submitted) return;
+  if (confirm("Submit test? You cannot re-attempt.")) submitTest();
 }
 
 function submitTest() {
   if (submitted) return;
 
   submitted = true;
+  clearFsWarning();
+
+  document.querySelectorAll("textarea").forEach(ta => ta.disabled = true);
   document.getElementById("submittedOverlay").style.display = "flex";
+
+  if (document.exitFullscreen) document.exitFullscreen();
+  else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+
   document.getElementById("testForm").submit();
 }
-function autoSubmit() {
-  alert("Time over!");
+
+function autoSubmit(msg) {
+  if (submitted) return;
+  logViolation(msg);
+  alert("⏰ " + msg + " Auto-submitting...");
   submitTest();
 }
 
-/* TAB SWITCH */
+/* ── VIOLATION LOGGING ──
+   Client-side checks can always be bypassed. Logging to the server lets
+   instructors review flagged attempts afterward. */
+function logViolation(reason) {
+  violations++;
+  const el = document.getElementById("violationCount");
+  if (el) el.textContent = `Violations: ${violations}`;
+  try {
+    fetch("/log-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        testId: "<%= test._id %>",
+        reason,
+        time: Date.now()
+      })
+    });
+  } catch (e) {}
+}
+
+/* ── TAB SWITCH ── */
 document.addEventListener("visibilitychange", () => {
   if (document.hidden && started && !submitted) {
-    submitTest();
+    autoSubmit("Tab switch / window change detected!");
   }
 });
 
-document.addEventListener("keydown", (e) => {
-
-  // ESC key → submit
-  if (e.key === "Escape") {
-    if (started && !submitted) {
-      submitTest();
-    }
+window.addEventListener("blur", () => {
+  if (started && !submitted) {
+    logViolation("Window lost focus");
   }
+});
+
+/* ── FULLSCREEN EXIT ──
+   NOTE: Esc exiting fullscreen is a hard browser security behavior and
+   cannot be intercepted/prevented by JS. We instead detect the exit and
+   give a 5s countdown to return before auto-submitting. */
+function onFullscreenChange() {
+  if (!started || submitted) return;
+
+  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  if (!isFs) {
+    logViolation("Exited fullscreen");
+    startFsWarning();
+  } else {
+    clearFsWarning();
+  }
+}
+document.addEventListener("fullscreenchange", onFullscreenChange);
+document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+
+function startFsWarning() {
+  if (fsWarningTimer) return;
+  const banner = document.getElementById("warningBanner");
+  const counter = document.getElementById("warnCount");
+  banner.classList.add("show");
+  let count = 5;
+  counter.textContent = count;
+  fsWarningTimer = setInterval(() => {
+    count--;
+    counter.textContent = count;
+    if (count <= 0) {
+      clearInterval(fsWarningTimer);
+      fsWarningTimer = null;
+      autoSubmit("Left fullscreen and did not return!");
+    }
+  }, 1000);
+}
+
+function clearFsWarning() {
+  if (fsWarningTimer) {
+    clearInterval(fsWarningTimer);
+    fsWarningTimer = null;
+  }
+  document.getElementById("warningBanner").classList.remove("show");
+}
+
+/* ── BLOCK copy/paste/cut/right-click/drag ── */
+["copy", "paste", "cut", "contextmenu"].forEach(evt => {
+  document.addEventListener(evt, (e) => {
+    if (started && !submitted) e.preventDefault();
+  });
+});
+
+document.addEventListener("dragstart", (e) => {
+  if (started && !submitted) e.preventDefault();
+});
+
+/* ── KEYBOARD SHORTCUTS ──
+   Esc is intentionally NOT bound to submit anymore — Esc exits fullscreen
+   on its own, which is caught by onFullscreenChange() above and starts
+   the 5s warning/auto-submit countdown instead. */
+document.addEventListener("keydown", (e) => {
+  if (!started || submitted) return;
+
+  const k = e.key.toLowerCase();
 
   // block dev tools
-  if (e.key === "F12") {
+  if (e.key === "F12" || e.key === "PrintScreen") {
     e.preventDefault();
     return false;
   }
 
-  // Ctrl shortcuts
-  if (e.ctrlKey && ["c", "v", "x", "u", "p", "s"].includes(e.key.toLowerCase())) {
+  // Ctrl shortcuts: copy, paste, cut, select all, view-source, print, save
+  if (e.ctrlKey && ["c", "v", "x", "a", "u", "p", "s"].includes(k)) {
     e.preventDefault();
     return false;
   }
 
-  // Ctrl+Shift+I
-  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "i") {
+  // Ctrl+Shift+I / J / C (DevTools)
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && ["i", "j", "c"].includes(k)) {
     e.preventDefault();
     return false;
   }
 
-  // Ctrl+Shift+J
-  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "j") {
+  // Alt+Tab (best effort)
+  if (e.altKey && e.key === "Tab") {
     e.preventDefault();
     return false;
   }
 
-  // Ctrl+Shift+C
-  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "c") {
+  // Ctrl+W / N / T (close/new tab/window) - best effort
+  if (e.ctrlKey && ["w", "n", "t"].includes(k)) {
     e.preventDefault();
     return false;
   }
 });
 
+/* ── Warn before leaving/refreshing ── */
+window.addEventListener("beforeunload", (e) => {
+  if (started && !submitted) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
 </script>
