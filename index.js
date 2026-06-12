@@ -513,6 +513,18 @@ app.post("/check-answer", isLoggedIn, async (req, res) => {
   }
 });
 
+app.post("/log-event", isLoggedIn, async (req, res) => {
+  try {
+    const { testId, reason, time } = req.body;
+    console.log(`[VIOLATION] user=${req.user.username} test=${testId} reason="${reason}" time=${new Date(time).toISOString()}`);
+    // Optional: persist to DB for instructor review
+    // await Violation.create({ userId: req.user._id, testId, reason, time: new Date(time) });
+    res.json({ ok: true });
+  } catch (err) {
+    res.json({ ok: false });
+  }
+});
+
 //  Admin test controls ─
 app.post("/admin/start-test/:id", isLoggedIn, isAdmin, async (req, res) => {
   await Test.findByIdAndUpdate(req.params.id, { isActive: true, isEnded: false, startTime: new Date() });

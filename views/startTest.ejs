@@ -18,7 +18,7 @@
       <li>Full screen mode will be enabled</li>
       <li>Do not switch tabs (auto submit will trigger)</li>
       <li>Do not exit full screen</li>
-      <li>Time duration: <b><%= test.duration %> minutes</b></li>
+      <li>Time duration : <b><%= test.duration %> minutes</b></li>
       <li>Answer all questions carefully</li>
     </ul>
   </div>
@@ -76,7 +76,7 @@
             <% if (i > 0) { %>
               <button type="button" onclick="showQuestion(<%= i-1 %>)">Prev</button>
             <% } %>
-
+            &nbsp;  &nbsp;
             <% if (i < test.questions.length - 1) { %>
               <button type="button" onclick="showQuestion(<%= i+1 %>)">Next</button>
             <% } %>
