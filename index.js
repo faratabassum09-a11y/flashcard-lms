@@ -238,7 +238,7 @@ app.get("/dashboard", isLoggedIn, async (req, res) => {
       avgScore,
       availableTests,
       recentResults
-    }
+    } 
   });
 });
 

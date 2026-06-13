@@ -6,7 +6,9 @@
   <!-- LEFT -->
   <div class="settings-left">
 
-    <div class="settings-card">
+    <div class="settings-card hero-card">
+
+      <div class="hero-bg"></div>
 
       <div class="settings-header">
 
@@ -16,9 +18,10 @@
 
         <div>
           <h1><%= user.username %></h1>
-          <p>
+          <span class="role-badge <%= user.username === 'admin' ? 'admin' : 'student' %>">
+            <i class="fa-solid <%= user.username === 'admin' ? 'fa-shield-halved' : 'fa-graduation-cap' %>"></i>
             <%= user.username === "admin" ? "Administrator" : "Student Account" %>
-          </p>
+          </span>
         </div>
 
       </div>
@@ -29,21 +32,23 @@
       <div class="settings-stats">
 
         <div class="stat-card">
-          <h3>
+          <div class="stat-icon blue">
             <i class="fa-solid fa-pen"></i>
-            Tests Attempted
-          </h3>
-
-          <h1><%= totalTests %></h1>
+          </div>
+          <div>
+            <h3>Tests Attempted</h3>
+            <h1><%= totalTests %></h1>
+          </div>
         </div>
 
         <div class="stat-card">
-          <h3>
+          <div class="stat-icon green">
             <i class="fa-solid fa-chart-line"></i>
-            Total Marks
-          </h3>
-
-          <h1><%= totalMarks %></h1>
+          </div>
+          <div>
+            <h3>Total Marks</h3>
+            <h1><%= totalMarks %></h1>
+          </div>
         </div>
 
       </div>
@@ -58,13 +63,16 @@
 
         <% if(results.length === 0){ %>
 
-          <p class="empty-text">
-            No tests attempted yet.
-          </p>
+          <div class="empty-state">
+            <i class="fa-solid fa-folder-open"></i>
+            <p>No tests attempted yet.</p>
+          </div>
 
         <% } else { %>
 
-          <% results.forEach(r => { %>
+          <% results.forEach(r => {
+            const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
+          %>
 
             <div class="result-item">
 
@@ -82,7 +90,7 @@
                 </small>
               </div>
 
-              <div class="score-badge">
+              <div class="score-badge <%= pct >= 75 ? 'high' : pct >= 50 ? 'mid' : 'low' %>">
                 <%= r.score %>/<%= r.total %>
               </div>
 
@@ -93,6 +101,13 @@
         <% } %>
 
       </div>
+
+      <% } else { %>
+
+      <p class="admin-note">
+        <i class="fa-solid fa-circle-info"></i>
+        Admin accounts do not have test statistics. Use the panel below to manage your password.
+      </p>
 
       <% } %>
 
@@ -112,17 +127,19 @@
 
       <form action="/change-password" method="POST">
 
+        <label class="field-label">Current Password</label>
         <input
           type="password"
           name="currentPassword"
-          placeholder="Current Password"
+          placeholder="Enter current password"
           required
         >
 
+        <label class="field-label">New Password</label>
         <input
           type="password"
           name="newPassword"
-          placeholder="New Password"
+          placeholder="Enter new password"
           required
         >
 
@@ -133,6 +150,17 @@
 
       </form>
 
+    </div>
+
+    <div class="settings-card link-card">
+      <a href="/profile" class="nav-link">
+        <i class="fa-solid fa-id-badge"></i>
+        View Profile
+      </a>
+      <a href="/dashboard" class="nav-link">
+        <i class="fa-solid fa-house"></i>
+        Back to Dashboard
+      </a>
     </div>
 
   </div>
@@ -149,10 +177,22 @@
   display:grid;
   grid-template-columns:1.2fr .8fr;
   gap:24px;
+  align-items:start;
+}
+
+.settings-left, .settings-right{
+  display:flex;
+  flex-direction:column;
+  gap:24px;
 }
 
 .settings-card{
-  background:#171923;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.03),
+      rgba(255,255,255,.015)
+    );
 
   border:1px solid rgba(255,255,255,.06);
 
@@ -164,6 +204,31 @@
     0 20px 40px rgba(0,0,0,.30);
 
   backdrop-filter:blur(12px);
+
+  position:relative;
+  overflow:hidden;
+}
+
+.hero-card{
+  position:relative;
+}
+
+.hero-bg{
+  position:absolute;
+
+  width:300px;
+  height:300px;
+
+  top:-130px;
+  right:-110px;
+
+  background:
+    radial-gradient(
+      rgba(91,124,255,.18),
+      transparent 70%
+    );
+
+  pointer-events:none;
 }
 
 .settings-header{
@@ -172,6 +237,9 @@
   gap:18px;
 
   margin-bottom:2rem;
+
+  position:relative;
+  z-index:2;
 }
 
 .profile-avatar{
@@ -202,11 +270,30 @@
 
 .settings-header h1{
   color:#fff;
-  margin-bottom:4px;
+  margin-bottom:8px;
 }
 
-.settings-header p{
-  color:#98a0b8;
+.role-badge{
+  padding:.45rem .9rem;
+
+  border-radius:999px;
+
+  font-size:.8rem;
+  font-weight:600;
+
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+
+.role-badge.student{
+  background:rgba(91,124,255,.12);
+  color:#aebdff;
+}
+
+.role-badge.admin{
+  background:rgba(255,176,32,.12);
+  color:#ffd27b;
 }
 
 .settings-stats{
@@ -215,6 +302,9 @@
   gap:18px;
 
   margin-bottom:2rem;
+
+  position:relative;
+  z-index:2;
 }
 
 .stat-card{
@@ -222,9 +312,13 @@
 
   border-radius:22px;
 
-  padding:1.5rem;
+  padding:1.4rem;
 
   border:1px solid rgba(255,255,255,.05);
+
+  display:flex;
+  align-items:center;
+  gap:16px;
 
   transition:.22s ease;
 }
@@ -235,22 +329,43 @@
   border-color:rgba(91,124,255,.25);
 }
 
-.stat-card h3{
-  color:#b7c0db;
+.stat-icon{
+  width:56px;
+  height:56px;
+  min-width:56px;
 
-  font-size:.95rem;
-
-  margin-bottom:10px;
+  border-radius:16px;
 
   display:flex;
   align-items:center;
-  gap:10px;
+  justify-content:center;
+
+  color:#fff;
+
+  font-size:1.15rem;
+}
+
+.stat-icon.blue{
+  background:linear-gradient(135deg,#5b7cff,#7f96ff);
+}
+
+.stat-icon.green{
+  background:linear-gradient(135deg,#18c58f,#33e0aa);
+}
+
+.stat-card h3{
+  color:#b7c0db;
+
+  font-size:.88rem;
+  font-weight:600;
+
+  margin-bottom:6px;
 }
 
 .stat-card h1{
   color:#fff;
 
-  font-size:2.2rem;
+  font-size:1.9rem;
 }
 
 .section-title{
@@ -261,6 +376,14 @@
   display:flex;
   align-items:center;
   gap:10px;
+
+  position:relative;
+  z-index:2;
+}
+
+.recent-results{
+  position:relative;
+  z-index:2;
 }
 
 .result-item{
@@ -315,13 +438,6 @@
 
   border-radius:50%;
 
-  background:
-    linear-gradient(
-      135deg,
-      #5b7cff,
-      #7f96ff
-    );
-
   display:flex;
   align-items:center;
   justify-content:center;
@@ -330,19 +446,73 @@
 
   font-size:1rem;
   font-weight:700;
-
-  box-shadow:
-    0 10px 25px rgba(91,124,255,.22);
 }
 
-.empty-text{
+.score-badge.high{
+  background:linear-gradient(135deg,#18c58f,#33e0aa);
+  box-shadow:0 10px 25px rgba(24,197,143,.22);
+}
+
+.score-badge.mid{
+  background:linear-gradient(135deg,#ffb020,#ffcf6b);
+  box-shadow:0 10px 25px rgba(255,176,32,.22);
+}
+
+.score-badge.low{
+  background:linear-gradient(135deg,#ff5b6e,#ff7382);
+  box-shadow:0 10px 25px rgba(255,91,110,.22);
+}
+
+.empty-state{
+  text-align:center;
+  padding:2.5rem 1rem;
   color:#98a0b8;
 }
+
+.empty-state i{
+  font-size:2.5rem;
+  margin-bottom:1rem;
+  color:#5b7cff;
+}
+
+.admin-note{
+  color:#9aa3bc;
+  line-height:1.7;
+  font-size:.92rem;
+
+  background:#1e2230;
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:18px;
+  padding:1.1rem 1.3rem;
+
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+
+  position:relative;
+  z-index:2;
+}
+
+.admin-note i{
+  margin-top:3px;
+  color:#7f96ff;
+}
+
+/* FORM */
 
 form{
   display:flex;
   flex-direction:column;
-  gap:16px;
+  gap:8px;
+  position:relative;
+  z-index:2;
+}
+
+.field-label{
+  color:#98a0b8;
+  font-size:.82rem;
+  font-weight:600;
+  margin-top:8px;
 }
 
 form input{
@@ -361,6 +531,8 @@ form input{
   font-size:.95rem;
 
   transition:.2s ease;
+
+  margin-bottom:4px;
 }
 
 form input:focus{
@@ -378,6 +550,8 @@ form button{
   border-radius:16px;
 
   padding:1rem;
+
+  margin-top:8px;
 
   background:
     linear-gradient(
@@ -407,6 +581,40 @@ form button:hover{
     0 12px 28px rgba(91,124,255,.25);
 }
 
+/* LINK CARD */
+
+.link-card{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  padding:1.2rem;
+}
+
+.nav-link{
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  background:#1e2230;
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:16px;
+
+  padding:.9rem 1.1rem;
+
+  color:#cfd4e6;
+  font-weight:600;
+  font-size:.9rem;
+
+  text-decoration:none;
+  transition:.22s ease;
+}
+
+.nav-link:hover{
+  border-color:rgba(91,124,255,.25);
+  color:#fff;
+  transform:translateY(-2px);
+}
+
 @media(max-width:900px){
 
   .settings-page{
@@ -423,4 +631,3 @@ form button:hover{
 
 }
 </style>
-
