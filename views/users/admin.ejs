@@ -174,11 +174,11 @@
       </select>
 
       <!-- SEARCH -->
-      <!-- <input
+      <input
         type="text"
         id="questionSearch"
         placeholder="Search Question..."
-      > -->
+      >
 
       <!-- QUESTIONS -->
       <h3>
@@ -276,8 +276,17 @@
 //
 function filterQuestions() {
 
-  const selected =
-    document.getElementById("subjectSelect").value;
+  const selectEl =
+    document.getElementById("subject-select");
+
+  if (!selectEl) return;
+
+  const selected = selectEl.value;
+
+  const search =
+    document.getElementById("questionSearch");
+
+  const searchValue = search ? search.value.toLowerCase() : "";
 
   const items =
     document.querySelectorAll(".q-item");
@@ -287,15 +296,17 @@ function filterQuestions() {
     const subject =
       item.getAttribute("data-subject");
 
-    if (!selected) {
+    const question =
+      item.getAttribute("data-question");
 
-      item.style.display = "block";
-      return;
+    const matchesSubject =
+      !selected || subject === selected;
 
-    }
+    const matchesSearch =
+      !searchValue || question.includes(searchValue);
 
     item.style.display =
-      subject === selected
+      (matchesSubject && matchesSearch)
         ? "block"
         : "none";
 
@@ -306,29 +317,14 @@ function filterQuestions() {
 //
 // SEARCH FILTER
 //
-document
-  .getElementById("questionSearch")
-  .addEventListener("input", function () {
+const searchInput =
+  document.getElementById("questionSearch");
 
-    const value =
-      this.value.toLowerCase();
+if (searchInput) {
 
-    document
-      .querySelectorAll(".q-item")
-      .forEach(item => {
+  searchInput.addEventListener("input", filterQuestions);
 
-        const q =
-          item.getAttribute("data-question");
-
-        if (q.includes(value)) {
-          item.style.display = "block";
-        } else {
-          item.style.display = "none";
-        }
-
-      });
-
-  });
+}
 
 //
 // ENABLE/DISABLE MARKS
