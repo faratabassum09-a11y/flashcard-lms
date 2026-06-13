@@ -5,149 +5,709 @@
 
 <div class="dashboard-wrapper">
 
-  <div class="dashboard-card card-box">
+  <% if(username === "admin"){ %>
 
-    <% if(username === "admin"){ %>
+    <!-- ===================== ADMIN DASHBOARD ===================== -->
 
-      <!-- ADMIN DASHBOARD -->
+    <div class="dashboard-card hero-card">
+
+      <div class="hero-bg"></div>
+
       <div class="admin-hero">
-
         <div class="admin-icon">
           <i class="fa-solid fa-shield-halved"></i>
         </div>
 
-        <h1 class="dashboard-title">
+        <h1 class="dashboard-title">Welcome Back, Admin</h1>
 
-         
-          Welcome Back, Admin
-
-        </h1>
         <p class="admin-subtitle">
-
           <i class="fa-solid fa-circle-info"></i>
           Manage tests, monitor students, upload flashcards,
           and control the examination portal.
-
         </p>
-
       </div>
 
-      <div class="dashboard-actions">
+    </div>
 
-        <a class="action-btn results" href="/admin">
+    <!-- ADMIN STAT WIDGETS -->
+    <div class="stats-row">
 
-          <i class="fa-solid fa-screwdriver-wrench"></i>
-          Admin Panel
-
-        </a>
-
-        <a class="action-btn tests" href="/admin/results">
-
-          <i class="fa-solid fa-chart-line"></i>
-          View Results
-
-        </a>
-
+      <div class="stat-widget">
+        <div class="stat-icon blue">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div>
+          <p>Total Students</p>
+          <h2><%= stats.totalStudents %></h2>
+        </div>
       </div>
 
-    <% } else { %>
-
-      <!-- STUDENT DASHBOARD -->
-
-      <h2 class="dashboard-title">
-
-        <i class="fa-solid fa-user"></i>
-        Welcome <%= username %>
-
-      </h2>
-
-      <div class="dashboard-actions">
-
-        <a class="action-btn results" href="/flashcards">
-
-          <i class="fa-solid fa-book-open"></i>
-          Read Flashcards
-
-        </a>
-
-        <a
-          class="action-btn tests"
-          href="/tests?username=<%= username %>"
-        >
-
+      <div class="stat-widget">
+        <div class="stat-icon green">
           <i class="fa-solid fa-file-pen"></i>
-          Take Test
+        </div>
+        <div>
+          <p>Total Tests</p>
+          <h2><%= stats.totalTests %></h2>
+        </div>
+      </div>
 
-        </a>
+      <div class="stat-widget">
+        <div class="stat-icon purple">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div>
+          <p>Active Tests</p>
+          <h2><%= stats.activeTests %></h2>
+        </div>
+      </div>
+
+      <div class="stat-widget">
+        <div class="stat-icon orange">
+          <i class="fa-solid fa-layer-group"></i>
+        </div>
+        <div>
+          <p>Flashcards</p>
+          <h2><%= stats.totalFlashcards %></h2>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="dashboard-grid">
+
+      <!-- ACTIONS -->
+      <div class="dashboard-card">
+        <h2 class="section-title">
+          <i class="fa-solid fa-bolt"></i>
+          Quick Actions
+        </h2>
+
+        <div class="dashboard-actions">
+
+          <a class="action-btn results" href="/admin">
+            <div class="action-icon">
+              <i class="fa-solid fa-screwdriver-wrench"></i>
+            </div>
+            <div class="action-text">
+              <h3>Admin Panel</h3>
+              <span>Upload flashcards, manage users & tests</span>
+            </div>
+            <i class="fa-solid fa-arrow-right action-arrow"></i>
+          </a>
+
+          <a class="action-btn tests" href="/admin/results">
+            <div class="action-icon">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="action-text">
+              <h3>View Results</h3>
+              <span>Check student scores & performance</span>
+            </div>
+            <i class="fa-solid fa-arrow-right action-arrow"></i>
+          </a>
+
+          <a class="action-btn create" href="/tests">
+            <div class="action-icon">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <div class="action-text">
+              <h3>Manage Tests</h3>
+              <span>Start, end, or schedule tests</span>
+            </div>
+            <i class="fa-solid fa-arrow-right action-arrow"></i>
+          </a>
+
+          <a class="action-btn cards" href="/flashcards">
+            <div class="action-icon">
+              <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div class="action-text">
+              <h3>Flashcards</h3>
+              <span>Browse the question bank</span>
+            </div>
+            <i class="fa-solid fa-arrow-right action-arrow"></i>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- RECENTLY ACTIVE / UPCOMING TESTS -->
+      <div class="dashboard-card">
+        <h2 class="section-title">
+          <i class="fa-solid fa-clock"></i>
+          Test Activity
+        </h2>
+
+        <% if(stats.upcomingTests && stats.upcomingTests.length > 0){ %>
+          <% stats.upcomingTests.forEach(t => { %>
+            <div class="test-row">
+              <div class="test-icon <%= t.isActive ? 'live' : 'scheduled' %>">
+                <i class="fa-solid <%= t.isActive ? 'fa-circle-play' : 'fa-clock' %>"></i>
+              </div>
+              <div class="test-info">
+                <h3><%= t.name %></h3>
+                <p><%= t.subject %></p>
+              </div>
+              <span class="test-status <%= t.isActive ? 'live' : 'scheduled' %>">
+                <%= t.isActive ? "Live" : "Scheduled" %>
+              </span>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="empty-state small">
+            <i class="fa-solid fa-folder-open"></i>
+            <p>No active or scheduled tests</p>
+          </div>
+        <% } %>
 
       </div>
 
-    <% } %>
+    </div>
 
+  <% } else { %>
+
+    <!-- ===================== STUDENT DASHBOARD ===================== -->
+
+    <div class="dashboard-card hero-card">
+
+      <div class="hero-bg"></div>
+
+      <div class="student-hero">
+        <div class="student-icon">
+          <i class="fa-solid fa-user"></i>
+        </div>
+
+        <h1 class="dashboard-title">Welcome, <%= username %></h1>
+
+        <p class="admin-subtitle">
+          <i class="fa-solid fa-circle-info"></i>
+          Review flashcards, take scheduled tests,
+          and track your performance from here.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- STUDENT STAT WIDGETS -->
+    <div class="stats-row">
+
+      <div class="stat-widget">
+        <div class="stat-icon blue">
+          <i class="fa-solid fa-pen"></i>
+        </div>
+        <div>
+          <p>Tests Attempted</p>
+          <h2><%= stats.totalTests %></h2>
+        </div>
+      </div>
+
+      <div class="stat-widget">
+        <div class="stat-icon green">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div>
+          <p>Total Marks</p>
+          <h2><%= stats.totalMarks %></h2>
+        </div>
+      </div>
+
+      <div class="stat-widget">
+        <div class="stat-icon purple">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <div>
+          <p>Average Score</p>
+          <h2><%= stats.avgScore %>%</h2>
+        </div>
+      </div>
+
+      <div class="stat-widget">
+        <div class="stat-icon orange">
+          <i class="fa-solid fa-bell"></i>
+        </div>
+        <div>
+          <p>Available Tests</p>
+          <h2><%= stats.availableTests %></h2>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="dashboard-grid">
+
+      <!-- ACTIONS -->
+      <div class="dashboard-card">
+        <h2 class="section-title">
+          <i class="fa-solid fa-bolt"></i>
+          Quick Actions
+        </h2>
+
+        <div class="dashboard-actions">
+
+          <a class="action-btn results" href="/flashcards">
+            <div class="action-icon">
+              <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div class="action-text">
+              <h3>Read Flashcards</h3>
+              <span>Revise topics before your test</span>
+            </div>
+            <i class="fa-solid fa-arrow-right action-arrow"></i>
+          </a>
+
+          <a class="action-btn tests" href="/tests?username=<%= username %>">
+            <div class="action-icon">
+              <i class="fa-solid fa-file-pen"></i>
+            </div>
+            <div class="action-text">
+              <h3>Take Test</h3>
+              <span>View available and upcoming tests</span>
+            </div>
+            <i class="fa-solid fa-arrow-right action-arrow"></i>
+          </a>
+
+          <a class="action-btn profile" href="/profile">
+            <div class="action-icon">
+              <i class="fa-solid fa-id-badge"></i>
+            </div>
+            <div class="action-text">
+              <h3>My Profile</h3>
+              <span>View your details and history</span>
+            </div>
+            <i class="fa-solid fa-arrow-right action-arrow"></i>
+          </a>
+
+          <a class="action-btn settings" href="/settings">
+            <div class="action-icon">
+              <i class="fa-solid fa-gear"></i>
+            </div>
+            <div class="action-text">
+              <h3>Settings</h3>
+              <span>Change your password</span>
+            </div>
+            <i class="fa-solid fa-arrow-right action-arrow"></i>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- RECENT RESULTS -->
+      <div class="dashboard-card">
+        <h2 class="section-title">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          Recent Results
+        </h2>
+
+        <% if(stats.recentResults && stats.recentResults.length > 0){ %>
+          <% stats.recentResults.forEach(r => {
+            const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
+          %>
+            <div class="test-row">
+              <div class="test-icon <%= pct >= 75 ? 'live' : pct >= 50 ? 'scheduled' : 'low' %>">
+                <i class="fa-solid fa-file-pen"></i>
+              </div>
+              <div class="test-info">
+                <h3><%= r.testId?.name || "Deleted Test" %></h3>
+                <p><%= r.testId?.subject || "No Subject" %></p>
+              </div>
+              <span class="test-status <%= pct >= 75 ? 'live' : pct >= 50 ? 'scheduled' : 'low' %>">
+                <%= r.score %>/<%= r.total %>
+              </span>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="empty-state small">
+            <i class="fa-solid fa-folder-open"></i>
+            <p>No test activity yet</p>
+          </div>
+        <% } %>
+
+      </div>
+
+    </div>
+
+  <% } %>
+
+  <div class="logout-row">
     <a class="logout-btn" href="/logout">
-
       <i class="fa-solid fa-right-from-bracket"></i>
       Logout
-
     </a>
-
   </div>
 
 </div>
 
 <style>
 
-/* ADMIN HERO */
-.admin-hero{
-  text-align:center;
-  margin-bottom:2rem;
+.dashboard-wrapper{
+  max-width: 1100px;
+  margin: 3rem auto;
+  padding: 0 1.5rem;
+
+  display:flex;
+  flex-direction:column;
+  gap:24px;
 }
 
-.admin-icon{
-  width:100px;
-  height:100px;
-  margin:auto auto 1.5rem;
-  border-radius:28px;
+.dashboard-card{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.03),
+      rgba(255,255,255,.015)
+    );
+
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:30px;
+  padding:2.2rem 2rem;
+
+  backdrop-filter:blur(10px);
+
+  box-shadow:
+    0 20px 45px rgba(0,0,0,.28);
+
+  position:relative;
+  overflow:hidden;
+}
+
+.hero-card{
+  padding:2.5rem 2rem;
+}
+
+.hero-bg{
+  content:"";
+  position:absolute;
+  width:350px;
+  height:350px;
+  top:-150px;
+  right:-120px;
+  background: radial-gradient(rgba(91,124,255,.18), transparent 70%);
+  pointer-events:none;
+}
+
+/* HERO */
+.admin-hero, .student-hero{
+  text-align:center;
+  position:relative;
+  z-index:2;
+}
+
+.admin-icon, .student-icon{
+  width:90px;
+  height:90px;
+  margin:auto auto 1.3rem;
+  border-radius:24px;
 
   background: linear-gradient(135deg,#5b7cff,#7f96ff);
   display:flex;
   align-items:center;
   justify-content:center;
 
-  font-size:2.5rem;
+  font-size:2.2rem;
   color:#fff;
 
-  box-shadow:0 20px 40px rgba(91,124,255,.28);
+  box-shadow:0 18px 38px rgba(91,124,255,.28);
 }
 
-/* SUBTITLE */
+.dashboard-title{
+  color:#fff;
+  font-size:1.9rem;
+  font-weight:700;
+  margin-bottom:.7rem;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+
 .admin-subtitle{
-  max-width:500px;
+  max-width:480px;
   margin:auto;
   color:#9aa3bc;
   line-height:1.7;
+  font-size:.95rem;
+
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  gap:8px;
+}
+
+.admin-subtitle i{
+  margin-top:3px;
+  color:#7f96ff;
+}
+
+/* STAT WIDGETS ROW */
+.stats-row{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:18px;
+}
+
+.stat-widget{
+  background:#171c28;
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:22px;
+  padding:1.3rem;
+
+  display:flex;
+  align-items:center;
+  gap:14px;
+
+  transition:.22s ease;
+}
+
+.stat-widget:hover{
+  transform:translateY(-3px);
+  box-shadow:0 18px 30px rgba(0,0,0,.22);
+}
+
+.stat-icon{
+  width:54px;
+  height:54px;
+  min-width:54px;
+  border-radius:16px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  color:#fff;
+  font-size:1.1rem;
+}
+
+.stat-icon.blue{ background: linear-gradient(135deg,#5b7cff,#7f96ff); }
+.stat-icon.green{ background: linear-gradient(135deg,#18c58f,#33e0aa); }
+.stat-icon.purple{ background: linear-gradient(135deg,#8b5cf6,#a978ff); }
+.stat-icon.orange{ background: linear-gradient(135deg,#ffb020,#ffcf6b); }
+
+.stat-widget p{
+  color:#98a0b8;
+  font-size:.82rem;
+  margin-bottom:4px;
+}
+
+.stat-widget h2{
+  color:#fff;
+  font-size:1.6rem;
+}
+
+/* MAIN GRID */
+.dashboard-grid{
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  gap:24px;
+}
+
+.section-title{
+  color:#fff;
+  font-size:1.1rem;
+  margin-bottom:1.3rem;
+
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* ACTIONS */
+.dashboard-actions{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.action-btn{
+  display:flex;
+  align-items:center;
+  gap:16px;
+
+  background:#171b26;
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:20px;
+  padding:1rem 1.2rem;
+
+  text-decoration:none;
+  color:#e6e6e6;
+
+  transition:.22s ease;
+}
+
+.action-btn:hover{
+  transform:translateY(-3px);
+  border-color:rgba(91,124,255,.28);
+  box-shadow:0 16px 32px rgba(0,0,0,.25);
+}
+
+.action-icon{
+  width:50px;
+  height:50px;
+  min-width:50px;
+  border-radius:14px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:1.15rem;
+  color:#fff;
+
+  background: linear-gradient(135deg,#5b7cff,#7f96ff);
+}
+
+.action-btn.tests .action-icon{ background: linear-gradient(135deg,#18c58f,#33e0aa); }
+.action-btn.create .action-icon{ background: linear-gradient(135deg,#8b5cf6,#a978ff); }
+.action-btn.cards .action-icon,
+.action-btn.profile .action-icon{ background: linear-gradient(135deg,#ffb020,#ffcf6b); }
+.action-btn.settings .action-icon{ background: linear-gradient(135deg,#ff5b6e,#ff7382); }
+
+.action-text{
+  flex:1;
+}
+
+.action-text h3{
+  color:#fff;
+  font-size:1rem;
+  margin-bottom:3px;
+}
+
+.action-text span{
+  color:#9aa3bc;
+  font-size:.83rem;
+}
+
+.action-arrow{
+  color:#5b7cff;
+  font-size:.9rem;
+  transition:.22s ease;
+}
+
+.action-btn:hover .action-arrow{
+  transform:translateX(4px);
+}
+
+/* TEST ROWS (activity / upcoming) */
+.test-row{
+  display:flex;
+  align-items:center;
+  gap:14px;
+
+  background:#1d2230;
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:18px;
+
+  padding:.9rem 1.1rem;
+  margin-bottom:12px;
+
+  transition:.22s ease;
+}
+
+.test-row:hover{
+  transform:translateY(-2px);
+  border-color:rgba(91,124,255,.18);
+}
+
+.test-icon{
+  width:46px;
+  height:46px;
+  min-width:46px;
+  border-radius:14px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  color:#fff;
+  font-size:1rem;
+}
+
+.test-icon.live{ background: linear-gradient(135deg,#18c58f,#33e0aa); }
+.test-icon.scheduled{ background: linear-gradient(135deg,#ffb020,#ffcf6b); }
+.test-icon.low{ background: linear-gradient(135deg,#ff5b6e,#ff7382); }
+
+.test-info{
+  flex:1;
+}
+
+.test-info h3{
+  color:#fff;
+  font-size:.95rem;
+  margin-bottom:2px;
+}
+
+.test-info p{
+  color:#9aa3bc;
+  font-size:.8rem;
+}
+
+.test-status{
+  font-size:.78rem;
+  font-weight:700;
+  padding:.4rem .8rem;
+  border-radius:999px;
+}
+
+.test-status.live{ background:rgba(24,197,143,.14); color:#33e0aa; }
+.test-status.scheduled{ background:rgba(255,176,32,.14); color:#ffcf6b; }
+.test-status.low{ background:rgba(255,91,110,.14); color:#ff7382; }
+
+/* EMPTY */
+.empty-state.small{
+  text-align:center;
+  padding:2rem 1rem;
+  color:#98a0b8;
+}
+
+.empty-state.small i{
+  font-size:2.2rem;
+  margin-bottom:.8rem;
+  color:#5b7cff;
 }
 
 /* LOGOUT */
+.logout-row{
+  display:flex;
+  justify-content:flex-end;
+}
+
 .logout-btn{
-  margin-top:1rem;
   display:inline-flex;
   align-items:center;
-  justify-content:center;
   gap:10px;
 
   background: linear-gradient(135deg,#ff5b6e,#ff7382);
   color:#fff;
 
-  padding:.95rem 1.4rem;
+  padding:.85rem 1.4rem;
   border-radius:16px;
   font-weight:600;
+  font-size:.9rem;
+  text-decoration:none;
+
   transition:.22s ease;
 }
 
 .logout-btn:hover{
   transform:translateY(-2px);
   box-shadow:0 12px 25px rgba(255,91,110,.24);
+}
+
+/* MOBILE */
+@media(max-width:950px){
+  .stats-row{
+    grid-template-columns:1fr 1fr;
+  }
+  .dashboard-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:600px){
+  .stats-row{
+    grid-template-columns:1fr;
+  }
 }
 
 </style>

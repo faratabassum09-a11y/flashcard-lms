@@ -178,8 +178,68 @@ app.get("/logout", (req, res, next) => {
 });
 
 //  Dashboard / Admin ─
-app.get("/dashboard", isLoggedIn, (req, res) => {
-  res.render("dashboard", { username: req.user.username });
+// ── Dashboard / Admin ──────────────────────────────────────────
+app.get("/dashboard", isLoggedIn, async (req, res) => {
+  const username = req.user.username;
+
+  if (username === "admin") {
+    const totalStudents   = await User.countDocuments({ username: { $ne: "admin" } });
+    const totalTests      = await Test.countDocuments({});
+    const activeTests     = await Test.countDocuments({ isActive: true, isEnded: false });
+    const totalFlashcards = await Flashcard.countDocuments({});
+
+    const upcomingTests = await Test.find({ isEnded: false })
+      .sort({ isActive: -1, scheduledStart: 1 })
+      .limit(5)
+      .lean();
+
+    return res.render("dashboard", {
+      username,
+      stats: {
+        totalStudents,
+        totalTests,
+        activeTests,
+        totalFlashcards,
+        upcomingTests
+      }
+    });
+  }
+
+  // ── Student stats ──
+  const results = await Result.find({ userId: req.user._id })
+    .populate("testId")
+    .sort({ submittedAt: -1 });
+
+  const totalTests = results.length;
+  let totalMarks = 0, totalPossible = 0;
+  results.forEach(r => {
+    totalMarks    += r.score || 0;
+    totalPossible += r.total || 0;
+  });
+
+  const avgScore = totalPossible > 0
+    ? Math.round((totalMarks / totalPossible) * 100)
+    : 0;
+
+  // Tests this student hasn't attempted yet, that are active or scheduled
+  const attemptedTestIds = results.map(r => r.testId?._id?.toString()).filter(Boolean);
+  const availableTests = await Test.countDocuments({
+    isEnded: false,
+    _id: { $nin: attemptedTestIds }
+  });
+
+  const recentResults = results.slice(0, 5);
+
+  res.render("dashboard", {
+    username,
+    stats: {
+      totalTests,
+      totalMarks: Math.round(totalMarks * 10) / 10,
+      avgScore,
+      availableTests,
+      recentResults
+    }
+  });
 });
 
 app.get("/admin", isLoggedIn, isAdmin, async (req, res) => {
@@ -431,9 +491,9 @@ app.post("/submit-test", isLoggedIn, async (req, res) => {
     if (!test) return res.send("Invalid test");
 
     const already = await Result.findOne({ testId: testId.toString(), userId: req.user._id });
-    if (already) return res.send("❌ Already submitted");
+    if (already) return res.send("Already submitted");
 
-    if (!test.startTime) return res.send("❌ Test has not started");
+    if (!test.startTime) return res.send("Test has not started");
 
     let totalScore = 0, totalMarks = 0;
 
