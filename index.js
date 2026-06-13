@@ -433,12 +433,7 @@ app.post("/submit-test", isLoggedIn, async (req, res) => {
     const already = await Result.findOne({ testId: testId.toString(), userId: req.user._id });
     if (already) return res.send("❌ Already submitted");
 
-    const now   = Date.now();
     if (!test.startTime) return res.send("❌ Test has not started");
-
-    const start    = new Date(test.startTime).getTime();
-    const duration = test.duration * 60 * 1000;
-    if (now - start > duration + 30000) return res.send("⏰ Time ended");
 
     let totalScore = 0, totalMarks = 0;
 

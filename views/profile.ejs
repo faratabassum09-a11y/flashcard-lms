@@ -59,6 +59,11 @@
 
       </div>
 
+      <a href="/settings" class="settings-link">
+        <i class="fa-solid fa-gear"></i>
+        Account Settings
+      </a>
+
     </div>
 
     <% if(user.username !== "admin"){ %>
@@ -124,7 +129,9 @@
 
       <% if(recentResults.length > 0){ %>
 
-        <% recentResults.forEach(r => { %>
+        <% recentResults.forEach(r => {
+          const pct = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
+        %>
 
           <div class="activity-card">
 
@@ -150,8 +157,11 @@
 
             </div>
 
-            <div class="score-circle">
-              <%= r.score %>/<%= r.total %>
+            <div class="activity-right">
+              <div class="score-circle <%= pct >= 75 ? 'high' : pct >= 50 ? 'mid' : 'low' %>">
+                <%= r.score %>/<%= r.total %>
+              </div>
+              <span class="score-pct"><%= pct %>%</span>
             </div>
 
           </div>
@@ -163,9 +173,49 @@
         <div class="empty-state">
           <i class="fa-solid fa-folder-open"></i>
           <p>No test activity yet</p>
+          <a href="/tests" class="empty-action">Browse Tests</a>
         </div>
 
       <% } %>
+
+    </div>
+
+    <% } else { %>
+
+    <div class="profile-card">
+
+      <div class="card-header">
+        <h2>
+          <i class="fa-solid fa-bolt"></i>
+          Quick Actions
+        </h2>
+      </div>
+
+      <div class="admin-actions">
+
+        <a href="/admin" class="admin-action-card">
+          <div class="activity-icon">
+            <i class="fa-solid fa-screwdriver-wrench"></i>
+          </div>
+          <div>
+            <h3>Admin Panel</h3>
+            <p>Manage flashcards, users & tests</p>
+          </div>
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
+
+        <a href="/admin/results" class="admin-action-card">
+          <div class="activity-icon">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <div>
+            <h3>Results</h3>
+            <p>View student scores & reports</p>
+          </div>
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
+
+      </div>
 
     </div>
 
@@ -184,6 +234,12 @@
 
   display:grid;
   grid-template-columns:1fr 1fr;
+  gap:24px;
+}
+
+.profile-left{
+  display:flex;
+  flex-direction:column;
   gap:24px;
 }
 
@@ -217,6 +273,8 @@
 
 .hero-card{
   min-height:320px;
+  display:flex;
+  flex-direction:column;
 }
 
 .hero-bg{
@@ -307,6 +365,9 @@
 
   display:grid;
   gap:18px;
+
+  position:relative;
+  z-index:2;
 }
 
 .detail-box{
@@ -361,11 +422,42 @@
   margin-top:3px;
 }
 
+/* SETTINGS LINK */
+
+.settings-link{
+  margin-top:1.5rem;
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+
+  background:#1e2230;
+  border:1px solid rgba(255,255,255,.06);
+
+  color:#cfd4e6;
+  font-weight:600;
+  font-size:.9rem;
+
+  padding:.9rem 1.2rem;
+  border-radius:16px;
+
+  text-decoration:none;
+  transition:.22s ease;
+
+  position:relative;
+  z-index:2;
+}
+
+.settings-link:hover{
+  border-color:rgba(91,124,255,.28);
+  color:#fff;
+  transform:translateY(-2px);
+}
+
 /* STATS */
 
 .stats-grid{
-  margin-top:24px;
-
   display:grid;
   gap:18px;
 }
@@ -494,6 +586,7 @@
 .activity-icon{
   width:58px;
   height:58px;
+  min-width:58px;
 
   border-radius:18px;
 
@@ -526,18 +619,18 @@
   font-size:.78rem;
 }
 
+.activity-right{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+}
+
 .score-circle{
   min-width:70px;
   height:70px;
 
   border-radius:50%;
-
-  background:
-    linear-gradient(
-      135deg,
-      #18c58f,
-      #33e0aa
-    );
 
   display:flex;
   align-items:center;
@@ -547,9 +640,93 @@
 
   font-weight:700;
   font-size:.95rem;
+}
+
+.score-circle.high{
+  background:
+    linear-gradient(
+      135deg,
+      #18c58f,
+      #33e0aa
+    );
 
   box-shadow:
     0 10px 24px rgba(24,197,143,.24);
+}
+
+.score-circle.mid{
+  background:
+    linear-gradient(
+      135deg,
+      #ffb020,
+      #ffcf6b
+    );
+
+  box-shadow:
+    0 10px 24px rgba(255,176,32,.24);
+}
+
+.score-circle.low{
+  background:
+    linear-gradient(
+      135deg,
+      #ff5b6e,
+      #ff7382
+    );
+
+  box-shadow:
+    0 10px 24px rgba(255,91,110,.24);
+}
+
+.score-pct{
+  color:#9aa3bc;
+  font-size:.78rem;
+  font-weight:600;
+}
+
+/* ADMIN QUICK ACTIONS */
+
+.admin-actions{
+  display:grid;
+  gap:16px;
+}
+
+.admin-action-card{
+  display:flex;
+  align-items:center;
+  gap:16px;
+
+  background:#1d2230;
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:22px;
+
+  padding:1.1rem 1.2rem;
+
+  text-decoration:none;
+  color:#e6e6e6;
+
+  transition:.22s ease;
+}
+
+.admin-action-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(91,124,255,.22);
+}
+
+.admin-action-card h3{
+  color:#fff;
+  margin-bottom:3px;
+  font-size:1.02rem;
+}
+
+.admin-action-card p{
+  color:#9aa3bc;
+  font-size:.85rem;
+}
+
+.admin-action-card > i:last-child{
+  margin-left:auto;
+  color:#5b7cff;
 }
 
 /* EMPTY */
@@ -567,6 +744,28 @@
   margin-bottom:1rem;
 
   color:#5b7cff;
+}
+
+.empty-action{
+  display:inline-block;
+  margin-top:1rem;
+
+  background: linear-gradient(135deg,#5b7cff,#7f96ff);
+  color:#fff;
+
+  padding:.7rem 1.4rem;
+  border-radius:14px;
+
+  font-weight:600;
+  font-size:.88rem;
+
+  text-decoration:none;
+  transition:.22s ease;
+}
+
+.empty-action:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 25px rgba(91,124,255,.24);
 }
 
 /* MOBILE */
