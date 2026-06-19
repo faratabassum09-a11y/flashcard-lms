@@ -1,7 +1,9 @@
-require("dotenv").config();
+// backend/server.js
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
+
 const express        = require("express");
 const mongoose       = require("mongoose");
-const path           = require("path");
 const ejsMate        = require("ejs-mate");
 const session        = require("express-session");
 const MongoStore     = require("connect-mongo").default;
@@ -35,12 +37,14 @@ mongoose.connect(process.env.MONGO_URI)
   })
   .catch((err) => console.log("MongoDB error:", err));
 
+// --- Frontend paths now live one level up, in /frontend ---
 app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "../frontend/views"));
 app.set("layout", "layouts/boilerplate");
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "../frontend/public")));
 app.use(methodOverride("_method"));
 app.use(express.json());
 
@@ -119,4 +123,4 @@ app.use((err, req, res, next) => {
   res.status(statusCode).render("error.ejs", { err });
 });
 
-app.listen(5000, "0.0.0.0", () => console.log("Server running on port 5000"));
+app.listen(process.env.PORT || 5000, "0.0.0.0", () => console.log("Server running"));
